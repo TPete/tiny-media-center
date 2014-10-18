@@ -1,0 +1,6 @@
+RewriteEngine On
+
+# Alias /tvapi "C:/webroot/TVApi/public_html"
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^ index.php [QSA,L]
