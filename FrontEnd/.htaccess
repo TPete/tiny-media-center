@@ -1,0 +1,6 @@
+RewriteEngine On
+
+# Alias /tv "C:/webroot/TV/public_html"
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^ index.php [QSA,L]

@@ -1,0 +1,716 @@
+@CHARSET "ISO-8859-1";
+
+html, body{
+	height: 100%;
+	font-family: Verdana, Arial;
+	color: #626262;
+}
+
+body{
+	margin: 0;
+	background-color: #b2d7e8;
+	background: url("imgs/random_grey_variations.png") repeat scroll 0 0 rgba(0, 0, 0, 0.50);
+}
+
+h1{
+	text-align: center;
+}
+
+.clear{
+	clear: both;
+}
+
+.content-wrapper{
+	min-width: 750px;
+	margin: 0 auto;
+	background-color: #FFFFFF;
+	min-height: 400px;
+	border: 2px solid #CCCCCC;
+	outline: 2px solid #DDDDDD;
+	position: relative;
+	overflow: hidden;
+}
+
+#movie-list-wrapper, #movie-details{
+	width: 48%;
+	float: left;
+}
+
+.category-link{
+	width: 100px;
+	font-size: 16px;
+	font-weight: bold;
+	color: #606060;
+	padding: 15px;
+	border: 2px solid #606060;
+	display: inline-block;
+	text-align: center;
+	text-decoration: none;
+	float: left;
+	margin: 3px;
+}
+
+.category-link:HOVER{
+	background-color: #606060;
+	color: #FFFFFF;
+}
+
+.category-overview{
+	float: left;
+}
+
+.category-selection-wrapper{
+	text-align: center;
+}
+
+.category-selection{
+	padding: 50px;
+	margin-top: 50px;
+	display: inline-block;
+}
+
+.sub-category{
+	position: relative;
+	float: left;
+	display: inline-block;
+	margin-bottom: -4px;
+}
+
+.sub-category>span{
+	display: none;
+	position: absolute;
+	bottom: 5px;
+	left: 0;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	text-align: center;
+	font-size: 14px;
+	font-weight: bold;
+	color: #FFFFFF;
+	background-color: rgba(200, 200, 200, 0.8);
+	width: calc(100% - 6px);
+	padding: 3px;
+}
+
+.sub-category:HOVER>span{
+	display: inline-block;
+}
+
+#episodes-outer-wrapper{
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-size: cover;
+	height: 100%;
+	overflow: hidden;
+	
+}
+
+.episodes-wrapper{
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-size: cover;
+	height: 100%;
+	overflow: auto;
+	position: relative;
+	z-index: 2;
+}
+
+.episode-list{
+	margin: 5px 0 5px -30px;
+}
+
+.episodes-navigation>li{
+	list-style: none;
+	display: inline-block;
+	margin-bottom: 10px;
+}
+
+.episodes-navigation>li>a, .season-title{
+	text-decoration: none;
+	background-color: rgba(125, 125, 125, 0.6);
+    color: #EEEEEE;
+    padding: 3px 10px;
+    width: 150px;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.episodes-navigation>li>a:HOVER{
+	background-color: rgba(200, 200, 200, 0.9);
+}
+
+.movie-list, .collection-list, .people-list{
+	margin: 0;
+	min-height: 250px;
+	max-height: 250px;
+	overflow-y: auto;
+	padding: 0;
+}
+
+.collection-list  ul, .people-list ul{
+	padding-left: 1em;
+}
+
+#movie-tabs > div{
+	padding: 0.2em;
+}
+
+#movie-details-poster{
+	height: 600px;
+	width: 400px;
+	float: right;
+}
+
+#movie-details-info, #nm-movie-details-info{
+	float: left;
+	max-width: 150px;
+}
+
+#movie-overview>img{
+	float: left;
+}
+
+.movie-overview-poster{
+	cursor: pointer; float: left;
+}
+
+#movie-overview-prev{
+	float: left;
+}
+
+#movie-overview-next{
+	float: right;
+}
+
+#movie-overview{
+	margin: 0 auto;
+}
+
+#nm-movie-details-wrapper{
+	padding: 0 10px;
+}
+
+#nm-movie-poster, #nm-movie-details{
+	float: left;
+}
+
+#nm-movie-poster{
+	margin-right: 10px;
+	cursor: pointer;
+}
+.movie-details-overview{
+	overflow-y: auto;
+	max-height: 100px;
+}
+
+.nm-movie-details-overview{
+	float: left;
+	overflow-y: auto;
+}
+.movie-overview-nav, .movie-overview-nav:VISITED, #movie-play-link, #movie-edit-link{
+	border: 2px solid #cccccc;
+	background-color: #eeeeee;
+	color: #666666;
+	font-size: 20px;
+	font-weight: bold;
+	text-decoration: none;
+}
+
+.movie-overview-nav.disabled{
+	cursor: default;
+}
+
+.movie-overview-nav:HOVER, #movie-play-link:HOVER, #movie-edit-link:HOVER, #episode-play-link:HOVER{
+	background-color: #666666;
+	color: #eeeeee;
+}
+
+.movie-overview-nav.disabled:HOVER{
+	background-color: #eeeeee;
+	color: #666666;
+}
+
+#movie-play-link{
+	padding: 3px 10px 5px 13px;
+}
+
+#movie-edit-link{
+	padding: 3px 5px 5px;
+}
+
+.movie-collection-details{
+	min-height: 360px;
+	max-height: 360px;
+	overflow-y: auto;
+}
+
+.movie-collection-details > ul{
+	list-style: none;
+}
+
+#movie-tabs .ui-tabs-nav li a{
+	padding: 0.5em 1em;
+}
+
+#nm-movie-search-box label, #show-edit-box label{
+	display: inline-block;
+	width: 120px;
+}
+
+#nm-movie-search-box input[type="text"], #show-edit-box input[type="text"]{
+	width: 400px;
+}
+
+#nm-movie-search-box select{
+	width: 406px;
+	padding: 2px;
+}
+
+#nm-movie-search-box .tagit{
+	width: 394px;
+	margin: -16px 0 -16px 126px;
+}
+
+#nm-movie-search-box .tagit input[type="text"]{
+	width: 150px;
+}
+
+.tagit-autocomplete{
+	max-height: 150px;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+#loader-movie-overview{
+	margin: 0 auto;
+}
+
+#loader-movie-details{
+	background: url("imgs/ajax-loader.gif") no-repeat center center;
+	width: 100%;
+	height: 100%;
+}
+
+#loader-movie-overview>div{
+	float: left;
+	background: url("imgs/ajax-loader.gif") no-repeat center center;
+}
+
+@media (max-width: 1025px){
+	#movie-tabs .ui-tabs-nav li a{
+		padding: 0.5em 0.3em;
+	}
+	#episodes-outer-wrapper, .episodes-wrapper{
+		height: 420px;
+		width: 760px;
+	}
+	#episode-details{
+		max-height: 300px;
+	}
+	.content-wrapper, .series-title{
+		width: 760px;
+	}
+	.movie-list, .collection-list, .people-list{
+		min-height: 250px;
+		max-height: 250px;
+	}
+	
+	#movie-details-poster{
+		height: 300px;
+		width: 200px;
+	}
+	
+	#movie-details-info{
+		max-width: 150px;
+	}
+	
+	.movie-details-overview{
+		max-height: 100px;
+	}
+	
+	.movie-collection-details{
+		min-height: 360px;
+		max-height: 360px;
+	}
+	.thumbnail{
+		width: 190px;
+	}
+	#nm-movie-details-wrapper{
+		height: 340px;
+	}
+	#nm-movie-poster>img{
+		height: 300px;
+		width: 200px;
+	}
+	#nm-movie-details{
+		width: 530px;
+	}
+	#nm-movie-details-info{
+		max-width: 210px;
+	}
+	.nm-movie-details-overview{
+		width: 320px;
+		max-height: 340px;
+	}
+	#loader-movie-overview{
+		width: 600px;
+	}
+	.movie-overview-poster, #loader-movie-overview>div{
+		height: 150px;
+		width: 100px;
+	}
+	#movie-overview{
+		width: 755px;
+	}
+	.movie-overview-nav, .movie-overview-nav:VISITED{
+		padding: 30px 10px 40px;
+		margin: 25px 18px;
+	}
+	.nm-movie-details-title{
+		display: none;
+	}	
+}
+
+@media (min-width: 1025px) and (max-width: 1440px){
+	#episodes-outer-wrapper, .episodes-wrapper{
+		height: 562px;
+		width: 1000px;
+	}
+	#episode-details{
+		max-height: 400px;
+	}
+	.content-wrapper,.series-title{
+		width: 1000px;
+	}
+	.movie-list, .collection-list, .people-list{
+		min-height: 400px;
+		max-height: 400px;
+	}
+	#movie-details-poster{
+		height: 375px;
+		width: 250px;
+	}
+	
+	#movie-details-info{
+		max-width: 200px;
+	}
+	
+	.movie-details-overview{
+		max-height: 145px;
+	}
+	
+	.movie-collection-details{
+		min-height: 510px;
+		max-height: 510px;
+	}
+	#nm-movie-details-wrapper{
+		height: 410px;
+		padding-bottom: 10px;
+	}
+	#nm-movie-poster>img{
+		height: 375px;
+		width: 250px;
+	}
+	#nm-movie-details{
+		width: 720px;
+	}
+	#nm-movie-details-info{
+		max-width: 200px;
+		padding: 10px;
+	}
+	.nm-movie-details-overview{
+		width: 470px;
+		max-height: 380px;
+		padding: 10px;
+	}
+	#loader-movie-overview{
+		width: 800px;
+	}
+	.movie-overview-poster, #loader-movie-overview>div{
+		height: 200px;
+		width: 133px;
+	}
+	#movie-overview{
+		width: 965px;
+	}
+	.movie-overview-nav, .movie-overview-nav:VISITED{
+		padding: 30px 20px 40px;
+		margin: 50px 10px;
+	}
+}
+
+@media (min-width: 1441px){
+	#episodes-outer-wrapper, .episodes-wrapper{
+		height: 760px;
+		width: 1400px;
+	}
+	#episode-details{
+		max-height: 500px;
+	}
+	.content-wrapper,.series-title{
+		width: 1400px;
+	}
+	.movie-list, .collection-list, .people-list{
+		min-height: 440px;
+		max-height: 640px;
+	}
+	#movie-details-poster{
+		height: 450px;
+		width: 300px;
+	}
+	
+	#movie-details-info{
+		max-width: 300px;
+	}
+	
+	.movie-details-overview{
+		max-height: 250px;
+	}
+	
+	.movie-collection-details{
+		min-height: 510px;
+		max-height: 710px;
+	}
+	#nm-movie-details-wrapper{
+		height: 540px;
+		padding-bottom: 10px;
+	}
+	#nm-movie-poster>img{
+		height: 500px;
+		width: 333px;
+	}
+	#nm-movie-details{
+		width: 980px;
+	}
+	#nm-movie-details-info{
+		max-width: 265px;
+		padding: 20px;
+	}
+	.nm-movie-details-overview{
+		width: 630px;
+		max-height: 500px;
+		padding: 20px;
+	}
+	#loader-movie-overview{
+		width: 1080px;
+	}
+	.movie-overview-poster, #loader-movie-overview>div{
+		height: 270px;
+		width: 180px;
+	}
+	#movie-overview{
+		width: 1250px;
+	}
+	.movie-overview-nav, .movie-overview-nav:VISITED{
+		padding: 30px 20px 40px;
+		margin: 90px 10px;
+	}
+}
+
+#movie-details, #movie-details-dialog{
+	padding: 10px;
+	color: #626262;
+}
+
+.movie-details-title, .movie-details-label{
+	font-weight: bold;
+}
+
+.movie-details-title-wrapper{
+	min-height: 70px;
+}
+
+.series-title{
+	background-color: #333333;
+	text-align: center;
+	color: #EEEEEE;
+	font-weight: bold;
+	font-size: 20px;
+	height: 50px;
+	position: relative;
+}
+
+.series-list{
+	list-style: none;
+	overflow-x: hidden;
+	width: 40%;
+}
+.episode-link-present{
+	color: #63b0fc;
+}
+.episode-link-present > a:VISITED{	
+	color: rgb(238, 238, 238);
+}
+.episode-link-present.selected > a:not(#episode-play-link){
+	color: rgb(33, 33, 33);
+	background-color: #63b0fc;
+}
+.episode-link-missing{
+	color: #eeeeee;
+}
+.episode-link-missing.selected > a{
+	color: rgb(33, 33, 33);
+	background-color: #eeeeee;
+}
+.series-list:HOVER>li>ul>li:not(.selected)>a{
+	background-color: rgba(33, 33, 33, 0.8);
+}
+.series-list>li>ul>li.episode-link-present>a:HOVER{
+	color: rgb(33, 33, 33);
+	background-color: #63b0fc;
+}
+.series-list>li>ul>li.episode-link-missing>a:HOVER{
+	color: rgb(33, 33, 33);
+	background-color: #eeeeee;
+}
+/*Spacer for play button*/
+.episode-link-present:not(.selected)>a,
+.episode-link-missing>a{
+	margin-left: 40px;
+}
+.movie-list, .collection-list{
+	padding: 0;
+}
+.episode-list > li, .movie-list > li, .collection-list li, .people-list li{
+	list-style: none;	
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.episode-list > li > a{
+	text-decoration: none;
+	color: inherit;
+	padding: 0 7px;
+}
+
+#episode-play-link{
+	background-color: #eeeeee;
+	color: #666666;
+	font-size: 14px;
+	padding: 3px 10px 5px 13px;
+}
+
+#episode-details{
+	display: none;
+	position: absolute;
+	top: 150px;
+	right: 0;
+	margin-right: 30px;
+	background-color: rgba(33, 33, 33, 0.8);
+	color: #EEEEEE;
+	padding: 10px;
+	width: 50%;
+	z-index: 1;
+	overflow: hidden;
+}
+#episode-details>h1{
+	font-size: 1em;
+	text-align: left;
+}
+
+.movie-list > li, .collection-list > li{
+	margin: 2px 0;
+}
+a.movie-info, a.collection-info{
+	color: #63b0fc;
+	padding: 0 7px;
+	text-decoration: none;
+}
+.movie-info, .collection-info{
+	border: 2px solid #FFFFFF;
+}
+.movie-info.empty{
+	font-weight: normal;
+	font-style: italic;
+}
+.movie-info.pending{
+	border: 2px solid #FFFF00;
+}
+.movie-info.done{
+	border: 2px solid #00FF00;
+}
+.movie-info.error{
+	border: 2px solid #FF0000;
+}
+.movie-info.ignore{
+	border: 2px solid #0000FF;
+}
+.header-caption{
+	padding-top: 10px;
+}
+
+.header-buttons-left, .header-buttons-right{
+	width: 50%;
+	margin-top: -35px;
+}
+.header-buttons-left{
+	float: left;
+	text-align: left;
+}
+.header-buttons-right{
+	float: right;
+	text-align: right;
+}
+.header-buttons-left>a:HOVER, .header-buttons-right>a:HOVER, .header-buttons-right>a.header-buttons-active{
+	background-color:  #3380CC;
+	color: #333333;
+}
+.header-buttons-left>a, .header-buttons-right>a{
+	width: 85px;
+	height: 33px;
+	padding: 11px 10px 0;
+	font-size: 0.8em;
+	color: #3380CC;
+	display: inline-block;
+	text-align: center;
+	text-decoration: none;
+	margin: 3px;
+}
+
+.movie-ctrls{
+	padding: 10px;
+}
+
+.movie-ctrls-input{
+	float: left;
+}
+
+#movie-ctrls-submit{
+	float: left;
+	margin-left: 15px;
+}
+
+.ctrl-label{
+	color: #212121;
+	font-size: 1.1em;
+	margin: 0 5px;
+	display: inline-block;
+	width: 100px;
+}
+
+#movie-progressbar{
+	position: absolute;
+	left: 10%;
+	top: 60px;
+	min-width: 400px;
+	min-height: 50px;
+	display: none;
+}
+
+.movie-link{
+	height: 18px;
+	margin-top: -5px;
+}
+
+.ui-dialog-no-title .ui-dialog-titlebar {
+	display:none
+}
+
+#movie-poster-dialog{
+	padding: 10px;
+}
+
+#movie-poster-dialog > img{
+	width: 100%;
+}
