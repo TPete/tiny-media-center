@@ -8,11 +8,11 @@ class ShowController{
 	private $SSDB;
 	private $scraper;
 	
-	public function __construct($path, $alias){
+	public function __construct($path, $alias, $dbConfig, $apiKey){
 		$this->path = $path;
 		$this->alias = $alias;
-		$this->SSDB = new ShowStoreDB();
-		$this->scraper = new TTVDBWrapper();
+		$this->SSDB = new ShowStoreDB($dbConfig);
+		$this->scraper = new TTVDBWrapper($apiKey);
 	}
 	
 	public function getList($category){

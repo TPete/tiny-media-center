@@ -9,8 +9,27 @@ $app = new \Slim\Slim(array(
 		'templates.path' => 'templates/'
 ));
 
-$config = array("host" => "192.168.2.2/tv", "restUrl" => "192.168.2.2/tvapi");
+$config = getConfig();
 $api = new RestAPI($config["restUrl"]);
+
+function getConfig(){
+	$config = readJSONFile("config.json");
+	$dir = $_SERVER["SCRIPT_NAME"];
+	$dir = substr($dir, 0, strrpos($dir, "/"));
+	$config["host"] = $_SERVER["HTTP_HOST"].$dir;
+	
+	return $config;
+}
+
+function readJSONFile($file){
+	$fileData = file_get_contents($file);
+	if(!mb_check_encoding($fileData, 'UTF-8')){
+		$fileData = utf8_encode($fileData);
+	}
+	$res = json_decode($fileData, true);
+
+	return $res;
+}
 
 function initGET($var, $default = "", $toInt = false){
 	$res = isset($_GET[$var]) ? $_GET[$var] : $default;
@@ -109,6 +128,20 @@ $app->get('/',
 			$app->render("headerBarMovies.php", array("header" => $header));
 			$categories = array("shows/serien/" => "Serien", "shows/kinder/" => "Kinder", "movies/" => "Filme");
 			$app->render("categorySelection.php", array("categories" => $categories));
+			$app->render("pageFooter.php", array("host" => $config["host"]));
+		});
+
+$app->get('/install', 
+		function() use($app, $config){
+			$header = "Install";
+			$app->render("pageHeader.php", array("pageTitle" => $header." Index", "host" => $config["host"]));
+			$app->render("headerBarMovies.php", array("header" => $header));
+			$file = "config.json";
+			if (!file_exists($file)){
+				$file = "example_config.json";
+			}
+			$config = readJSONFile($file);
+			$app->render("install.php", $config);
 			$app->render("pageFooter.php", array("host" => $config["host"]));
 		});
 

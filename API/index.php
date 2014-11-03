@@ -16,14 +16,10 @@ require 'lib/Slim/Slim.php';
 \Slim\Slim::registerAutoloader();
 
 $app = new \Slim\Slim(array(
-	'debug' => false,
     'templates.path' => 'templates/'
 ));
 
-$config = array("pathMovies" => "/media/tiny_filme/", "aliasMovies" => "/tvmovies/",
-		"moviePics" => "/var/www/html/tvapi/movie_pics/", "aliasMoviePics" => "/tvapi/movie_pics/", 
-		"pathShows" => "/media/tiny_serien/", "aliasShows" => "/tvshows/");
-
+$config = API\Util::readJSONFile("config.json");
 
 function initGET($var, $default = "", $toInt = false){
 	$res = isset($_GET[$var]) ? $_GET[$var] : $default;
@@ -46,7 +42,8 @@ $app->get('/', function(){
 
 $app->group('/shows', function() use ($app, $config){
 
-	$ShowController = new API\ShowController($config["pathShows"], $config["aliasShows"]);
+	$ShowController = new API\ShowController($config["pathShows"], $config["aliasShows"], 
+						$config["db"], $config["TTVDBApiKey"]);
 	
 	$app->get('/maintenance/',
 			function() use ($ShowController){
@@ -107,7 +104,7 @@ $app->group('/shows', function() use ($app, $config){
 $app->group('/movies', function() use ($app, $config){
 	
 	$MovieController = new API\MovieController($config["pathMovies"], $config["aliasMovies"], 
-			$config["moviePics"], $config["aliasMoviePics"]);
+			$config["moviePics"], $config["aliasMoviePics"], $config["db"], $config["TMDBApiKey"]);
 	
 	$app->get('/', 
 			function() use ($MovieController) {

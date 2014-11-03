@@ -9,11 +9,11 @@ class MovieController{
 	private $MSDB;
 	
 	
-	public function __construct($path, $alias, $picturePath, $pictureAlias){
+	public function __construct($path, $alias, $picturePath, $pictureAlias, $dbConfig, $apiKey){
 		$this->path = $path;
 		$this->picturePath = $picturePath;
-		$this->Scraper = new TMDBWrapper($path, $picturePath);
-		$this->MSDB = new MovieStoreDB($alias, $pictureAlias);
+		$this->Scraper = new TMDBWrapper($path, $picturePath, $apiKey);
+		$this->MSDB = new MovieStoreDB($dbConfig, $alias, $pictureAlias);
 	}
 	
 	/**

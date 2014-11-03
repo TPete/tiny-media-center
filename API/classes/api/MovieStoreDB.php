@@ -3,15 +3,18 @@ namespace API;
 
 class MovieStoreDB{
 	
-	private $host = "localhost";
-	private $db = "web_mmp";
-	private $user = "php_usr";
-	private $password = "hngker2390glw";
-	
+	private $host;
+	private $db;
+	private $user;
+	private $password;
 	private $alias;
 	private $pictureAlias;
 	
-	public function __construct($alias, $pictureAlias){
+	public function __construct($config, $alias, $pictureAlias){
+		$this->host = $config["host"];
+		$this->db = $config["name"];
+		$this->user = $config["user"];
+		$this->password = $config["password"];
 		$this->alias = $alias;
 		$this->pictureAlias = $pictureAlias;
 	}

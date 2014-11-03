@@ -1,0 +1,16 @@
+{
+	"pathMovies": "/path/to/movies/", 
+	"aliasMovies": "/alias of movies dir/",
+	"moviePics": "/path/to/movie pictures/", 
+	"aliasMoviePics": "/alias of movie pictures/", 
+	"pathShows": "/path/to/tv shows/", 
+	"aliasShows": "/alias of tv shows dir/",
+	"db": {
+		"host": "db host name",
+		"name": "db name",
+		"user": "db user name",
+		"password": "db password"
+	},
+	"TMDBApiKey": "themoviedb.org api key",
+	"TTVDBApiKey": "thetvdb.com api key"
+}

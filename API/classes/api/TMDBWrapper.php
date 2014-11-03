@@ -5,16 +5,17 @@ namespace API;
 //Wrapper for themoviedb.org API
 class TMDBWrapper{
 	
-	private $apiKey = "20e2e98c46fc5f81ab0f438fdf3f73b5";
+	private $apiKey;
 	private $baseUrl = "http://api.themoviedb.org/3/";
 	private $movieDir;
 	private $moviePics;
 	private $config;
 	
 	
-	public function __construct($movieDir, $moviePics){
+	public function __construct($movieDir, $moviePics, $apiKey){
 		$this->movieDir = $movieDir;
 		$this->moviePics = $moviePics;
+		$this->apiKey = $apiKey;
 	}
 	
 	private function curlDownload($url, $args = array()){

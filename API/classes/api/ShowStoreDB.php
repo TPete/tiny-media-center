@@ -3,11 +3,18 @@ namespace API;
 
 class ShowStoreDB{
 
-	private $host = "localhost";
-	private $db = "web_mmp";
-	private $user = "php_usr";
-	private $password = "hngker2390glw";
+	private $host;
+	private $db;
+	private $user;
+	private $password;
 
+	public function __construct($config){
+		$this->host = $config["host"];
+		$this->db = $config["name"];
+		$this->user = $config["user"];
+		$this->password = $config["password"];
+	}
+	
 	private function connect(){
 		$db = new \PDO("mysql:host=".$this->host.";dbname=".$this->db, $this->user, $this->password);
 		$db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);

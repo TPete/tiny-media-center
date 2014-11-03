@@ -5,12 +5,12 @@ namespace API;
 class TTVDBWrapper{
 
 	
-	private $apiKey = "2F0A44BB473DF27C";
+	private $apiKey;
 	private $baseUrl = "http://thetvdb.com/api/";
 	private $imageBaseUrl = "http://thetvdb.com/banners/fanart/original/";
 	
-	public function __construct(){
-		
+	public function __construct($apiKey){
+		$this->apiKey = $apiKey;
 	}
 	
 	private function curlDownload($url, $args = array()){
