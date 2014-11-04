@@ -1,5 +1,6 @@
 <?php
 
+use API;
 require "classes/Movie.php";
 require "classes/getID3/getid3/getid3.php";
 
@@ -20,6 +21,10 @@ $app = new \Slim\Slim(array(
 ));
 
 $config = API\Util::readJSONFile("config.json");
+$db = array("host" => $config["dbHost"],
+			"name" => $config["dbName"],
+			"user" => $config["dbUser"],
+			"password" => $config["dbPassword"]);
 
 function initGET($var, $default = "", $toInt = false){
 	$res = isset($_GET[$var]) ? $_GET[$var] : $default;
@@ -40,10 +45,20 @@ $app->get('/', function(){
 		echo "nothing to see here";
 });
 
-$app->group('/shows', function() use ($app, $config){
+$app->get('/config', 
+		function(){
+			$file = "config.json";
+			if (!file_exists($file)){
+				$file = "example_config.json";
+			}
+			$config = API\Util::readJSONFile($file);
+			echo json_encode($config);
+		});
+
+$app->group('/shows', function() use ($app, $config, $db){
 
 	$ShowController = new API\ShowController($config["pathShows"], $config["aliasShows"], 
-						$config["db"], $config["TTVDBApiKey"]);
+						$db, $config["TTVDBApiKey"]);
 	
 	$app->get('/maintenance/',
 			function() use ($ShowController){
@@ -101,10 +116,10 @@ $app->group('/shows', function() use ($app, $config){
 		
 });
 
-$app->group('/movies', function() use ($app, $config){
+$app->group('/movies', function() use ($app, $config, $db){
 	
 	$MovieController = new API\MovieController($config["pathMovies"], $config["aliasMovies"], 
-			$config["moviePics"], $config["aliasMoviePics"], $config["db"], $config["TMDBApiKey"]);
+			$config["moviePics"], $config["aliasMoviePics"], $db, $config["TMDBApiKey"]);
 	
 	$app->get('/', 
 			function() use ($MovieController) {
