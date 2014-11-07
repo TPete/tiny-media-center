@@ -21,6 +21,13 @@ class Util{
 		return $res;
 	}
 	
+	public static function writeJSONFile($file, $data){
+		$json = json_encode($data);
+		$res = file_put_contents($file, $json);
+	
+		return ($res !== false);
+	}
+	
 	public static function sortFiles($data, $sort, $order){
 		if ($sort === "name"){
 			sort($data, SORT_STRING);

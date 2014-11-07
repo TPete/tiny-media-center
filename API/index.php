@@ -55,6 +55,27 @@ $app->get('/config',
 			echo json_encode($config);
 		});
 
+$app->post('/config', 
+		function() use ($app){
+			$config = array();
+			$config["pathMovies"] = $_POST["pathMovies"];
+			$config["aliasMovies"] = $_POST["aliasMovies"];
+			$config["moviePics"] = $_POST["moviePics"];
+			$config["aliasMoviePics"] = $_POST["aliasMoviePics"];
+			$config["pathShows"] = $_POST["pathShows"];
+			$config["aliasShows"] = $_POST["aliasShows"];
+			$config["dbHost"] = $_POST["dbHost"];
+			$config["dbName"] = $_POST["dbName"];
+			$config["dbUser"] = $_POST["dbUser"];
+			$config["dbPassword"] = $_POST["dbPassword"];
+			$config["TMDBApiKey"] = $_POST["TMDBApiKey"];
+			$config["TTVDBApiKey"] = $_POST["TTVDBApiKey"];
+			
+			API\Util::writeJSONFile("config.json", $config);
+			
+			$app->redirect('/install');
+		});
+
 $app->group('/shows', function() use ($app, $config, $db){
 
 	$ShowController = new API\ShowController($config["pathShows"], $config["aliasShows"], 
