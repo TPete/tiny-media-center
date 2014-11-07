@@ -16,6 +16,16 @@ h1{
 	text-align: center;
 }
 
+label.config{
+	display: block;
+    padding: 5px;
+    width: 420px;
+}
+
+label.config > input{
+	width: 400px;
+}
+
 .clear{
 	clear: both;
 }

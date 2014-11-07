@@ -9,16 +9,22 @@ $app = new \Slim\Slim(array(
 		'templates.path' => 'templates/'
 ));
 
+$host = getHost();
 $config = getConfig();
 $api = new RestAPI($config["restUrl"]);
 
-function getConfig(){
-	$config = readJSONFile("config.json");
+function getHost(){
 	$dir = $_SERVER["SCRIPT_NAME"];
 	$dir = substr($dir, 0, strrpos($dir, "/"));
-	$config["host"] = $_SERVER["HTTP_HOST"].$dir;
+	$host = $_SERVER["HTTP_HOST"].$dir;
 	
-	return $config;
+	return $host;
+}
+
+function getConfig(){
+	$host = readJSONFile("config.json");
+	
+	return $host;
 }
 
 function readJSONFile($file){
@@ -29,6 +35,13 @@ function readJSONFile($file){
 	$res = json_decode($fileData, true);
 
 	return $res;
+}
+
+function writeJSONFile($file, $data){
+	$json = json_encode($data);
+	$res = file_put_contents($file, $json);
+	
+	return ($res !== false);
 }
 
 function initGET($var, $default = "", $toInt = false){
@@ -112,40 +125,64 @@ function getNextLink($offset, $cnt, $moviesCnt, $sort, $filter, $genres, $collec
 	return array("link" => $next, "class" => $nextClass);
 }
 
-function renderException($exp, $config, $app){
+function renderException($exp, $host, $app){
 	$header = "Error";
-	$app->render("pageHeader.php", array("pageTitle" => $header, "host" => $config["host"]));
+	$app->render("pageHeader.php", array("pageTitle" => $header, "host" => $host));
 	$app->render("headerBarShows.php", array("header" => $header, "showEditButton" => false));
 	$app->render("error.php", array("message" => $exp->getMessage(), "trace" => $exp->getStackTrace()));
-	$app->render("pageFooter.php", array("host" => $config["host"]));
+	$app->render("pageFooter.php", array("host" => $host));
 }
 
 $app->get('/',
-		function () use($app, $config){
+		function () use($app, $host){
 			$pageTitle = "Main Index";
 			$header = "TV";
-			$app->render("pageHeader.php", array("pageTitle" => $header." Index", "host" => $config["host"]));
+			$app->render("pageHeader.php", array("pageTitle" => $header." Index", "host" => $host));
 			$app->render("headerBarMovies.php", array("header" => $header));
 			$categories = array("shows/serien/" => "Serien", "shows/kinder/" => "Kinder", "movies/" => "Filme");
 			$app->render("categorySelection.php", array("categories" => $categories));
-			$app->render("pageFooter.php", array("host" => $config["host"]));
+			$app->render("pageFooter.php", array("host" => $host));
 		});
 
 $app->get('/install', 
-		function() use($app, $config){
+		function() use($app, $host, $api){
 			$header = "Install";
-			$app->render("pageHeader.php", array("pageTitle" => $header." Index", "host" => $config["host"]));
+			$app->render("pageHeader.php", array("pageTitle" => $header." Index", "host" => $host));
 			$app->render("headerBarMovies.php", array("header" => $header));
 			$file = "config.json";
 			if (!file_exists($file)){
 				$file = "example_config.json";
 			}
 			$config = readJSONFile($file);
-			$app->render("install.php", $config);
-			$app->render("pageFooter.php", array("host" => $config["host"]));
+			$apiConfig = $api->getConfig();
+			$app->render("install.php", array("host" => $host, "config" => $config, "apiConfig" => $apiConfig));
+			$app->render("pageFooter.php", array("host" => $host));
 		});
 
-$app->group('/shows', function() use ($app, $config, $api) {
+$app->post('/install',
+		function() use($app, $host, $api){
+			$config = array("restUrl" => $_POST["restUrl"]);
+			writeJSONFile("config.json", $config);
+			
+			$config = array();
+			$config["pathMovies"] = $_POST["pathMovies"];
+			$config["aliasMovies"] = $_POST["aliasMovies"];
+			$config["moviePics"] = $_POST["moviePics"];
+			$config["aliasMoviePics"] = $_POST["aliasMoviePics"];
+			$config["pathShows"] = $_POST["pathShows"];
+			$config["aliasShows"] = $_POST["aliasShows"];
+			$config["dbHost"] = $_POST["dbHost"];
+			$config["dbName"] = $_POST["dbName"];
+			$config["dbUser"] = $_POST["dbUser"];
+			$config["dbPassword"] = $_POST["dbPassword"];
+			$config["TMDBApiKey"] = $_POST["TMDBApiKey"];
+			$config["TTVDBApiKey"] = $_POST["TTVDBApiKey"];
+			$api->updateConfig($config);
+			
+			$app->redirect('http://'.$host.'/install');
+		});
+
+$app->group('/shows', function() use ($app, $host, $api) {
 
 	$app->get('/:category/edit/:id',
 			function($category, $id) use ($app, $api){
@@ -155,19 +192,19 @@ $app->group('/shows', function() use ($app, $config, $api) {
 							"title" => $details["title"], "tvdbId" => $details["tvdbId"]));
 				}
 				catch(RemoteException $exp){
-					renderException($exp, $config, $app);
+					renderException($exp, $host, $app);
 				}
 			});
 	
 	$app->post('/:category/edit/:id',
-			function($category, $id) use ($app, $api, $config){
+			function($category, $id) use ($app, $api, $host){
 				try{
 					$api->updateShowDetails($category, $id, $_POST["title"], $_POST["tvdbId"]);
 					
-					$app->redirect("http://".$config["host"].'/shows/'.$category.'/'.$id);
+					$app->redirect("http://".$host.'/shows/'.$category.'/'.$id);
 				}
 				catch(RemoteException $exp){
-					renderException($exp, $config, $app);
+					renderException($exp, $host, $app);
 				}
 			});
 	
@@ -179,17 +216,17 @@ $app->group('/shows', function() use ($app, $config, $api) {
 					$app->render("episodeDetails.php", $data);
 				}
 				catch(RemoteException $exp){
-					renderException($exp, $config, $app);
+					renderException($exp, $host, $app);
 				}
 			});
 	
 	$app->get('/:category/(:id)',
-			function ($category, $id = "") use ($app, $config, $api) {
+			function ($category, $id = "") use ($app, $host, $api) {
 				try{
 					if (strlen($id) === 0){
 						$data = $api->getCategoryOverview($category);
 						$header = ucfirst($category);
-						$target = $config["host"];
+						$target = $host;
 						$content = "categoryOverview.php";
 						$contentParams = array("overview" => $data);
 						$showEditButton = false;
@@ -197,28 +234,28 @@ $app->group('/shows', function() use ($app, $config, $api) {
 					else{
 						$data = $api->getShowDetails($category, $id);
 						$header = $data["title"];
-						$target = $config["host"]."/shows/".$category."/";
+						$target = $host."/shows/".$category."/";
 						$content = "episodesList.php";
 						$contentParams = array("showData" => $data["seasons"], "imageUrl" => $data["imageUrl"]);
 						$showEditButton = true;
 					}
-					$app->render("pageHeader.php", array("pageTitle" => $header, "host" => $config["host"]));
+					$app->render("pageHeader.php", array("pageTitle" => $header, "host" => $host));
 					$app->render("headerBarShows.php", array("header" => $header, "target" => $target, "showEditButton" => $showEditButton));
 					$app->render($content, $contentParams);
-					$app->render("pageFooter.php", array("host" => $config["host"]));
+					$app->render("pageFooter.php", array("host" => $host));
 				}
 				catch(RemoteException $exp){
-					renderException($exp, $config, $app);
+					renderException($exp, $host, $app);
 				}
 			});
 	
 	
 });
 
-$app->group('/movies', function() use ($app, $config, $api) {
+$app->group('/movies', function() use ($app, $host, $api) {
 
 	$app->get('/', 
-		function() use ($app, $config, $api){
+		function() use ($app, $host, $api){
 			try{
 				$sort = initGET("sort", "name_asc");
 				$filter = initGET("filter");
@@ -243,8 +280,8 @@ $app->group('/movies', function() use ($app, $config, $api) {
 				$header = "Filme";
 				if ($display === "all"){
 					$app->render("pageHeader.php", array("pageTitle" => $header." Index", 
-							"host" => $config["host"]));
-					$app->render("headerBarMovies.php", array("header" => $header, "target" => $config["host"], 
+							"host" => $host));
+					$app->render("headerBarMovies.php", array("header" => $header, "target" => $host, 
 							"searchButtons" => true, "sort" => $sort, "filter" => $filter, "genres" => $genres, 
 							"collection" => $collection, "list" => $list));
 					$view = $app->view();
@@ -259,7 +296,7 @@ $app->group('/movies', function() use ($app, $config, $api) {
 					$app->render("movieWrapper.php", array("movieOverview" => $movieOverview, 
 							"sort" => $sort, "filter" => $filter, "genres" => $genres, "offset" => $offset, 
 							"collection" => $collection, "list" => $list));
-					$app->render("pageFooter.php", array("host" => $config["host"]));
+					$app->render("pageFooter.php", array("host" => $host));
 				}
 				if ($display === "overview"){
 					$app->render("movieOverview.php", array("movies" => $movies["list"], 
@@ -268,7 +305,7 @@ $app->group('/movies', function() use ($app, $config, $api) {
 				}
 			}
 			catch(RemoteException $exp){
-				renderException($exp, $config, $app);
+				renderException($exp, $host, $app);
 			}
 		});
 	
@@ -279,7 +316,7 @@ $app->group('/movies', function() use ($app, $config, $api) {
 					$app->render("movieSearch.php", array("lists" => $comp["lists"], "collections" => $comp["collections"]));
 				}
 				catch(RemoteException $exp){
-					renderException($exp, $config, $app);
+					renderException($exp, $host, $app);
 				}
 			});
 	
@@ -295,7 +332,7 @@ $app->group('/movies', function() use ($app, $config, $api) {
 					}
 				}
 				catch(RemoteException $exp){
-					renderException($exp, $config, $app);
+					renderException($exp, $host, $app);
 				}
 			});
 	
@@ -308,12 +345,12 @@ $app->group('/movies', function() use ($app, $config, $api) {
 					echo json_encode($res);
 				}
 				catch(RemoteException $exp){
-					renderException($exp, $config, $app);
+					renderException($exp, $host, $app);
 				}
 			});
 	
 	$app->get('/:id',
-			function($id) use ($app, $config, $api){
+			function($id) use ($app, $host, $api){
 				try{
 					$movie = $api->getMovie($id);
 					$output = initGET("output", "html");
@@ -328,7 +365,7 @@ $app->group('/movies', function() use ($app, $config, $api) {
 					}
 				}
 				catch(RemoteException $exp){
-					renderException($exp, $config, $app);
+					renderException($exp, $host, $app);
 				}
 			});
 	
@@ -340,7 +377,7 @@ $app->group('/movies', function() use ($app, $config, $api) {
 					echo "OK";
 				}
 				catch(RemoteException $exp){
-					renderException($exp, $config, $app);
+					renderException($exp, $host, $app);
 				}
 			});
 	
