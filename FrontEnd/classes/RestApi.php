@@ -68,6 +68,22 @@ class RestAPI{
 		return $response;
 	}
 	
+//GENERAL
+
+	public function getConfig(){
+		$url = "/config";
+		$config = $this->curlDownload($url);
+		
+		return $config;
+	}
+	
+	public function updateConfig($config){
+		$url = "/config";
+		$res = $this->curlPost($url, $config);
+		
+		return $res;
+	}
+	
 //SHOWS
 	
 	public function getCategoryOverview($category){
