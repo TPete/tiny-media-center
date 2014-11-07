@@ -150,11 +150,16 @@ $app->get('/install',
 			$app->render("pageHeader.php", array("pageTitle" => $header." Index", "host" => $host));
 			$app->render("headerBarMovies.php", array("header" => $header));
 			$file = "config.json";
+			$knowsAPI = true;
 			if (!file_exists($file)){
 				$file = "example_config.json";
+				$knowsAPI = false;
 			}
 			$config = readJSONFile($file);
-			$apiConfig = $api->getConfig();
+			$apiConfig = array();
+			if ($knowsAPI and $api->isValid()){
+				$apiConfig = $api->getConfig();
+			}
 			$app->render("install.php", array("host" => $host, "config" => $config, "apiConfig" => $apiConfig));
 			$app->render("pageFooter.php", array("host" => $host));
 		});
@@ -164,20 +169,22 @@ $app->post('/install',
 			$config = array("restUrl" => $_POST["restUrl"]);
 			writeJSONFile("config.json", $config);
 			
-			$config = array();
-			$config["pathMovies"] = $_POST["pathMovies"];
-			$config["aliasMovies"] = $_POST["aliasMovies"];
-			$config["moviePics"] = $_POST["moviePics"];
-			$config["aliasMoviePics"] = $_POST["aliasMoviePics"];
-			$config["pathShows"] = $_POST["pathShows"];
-			$config["aliasShows"] = $_POST["aliasShows"];
-			$config["dbHost"] = $_POST["dbHost"];
-			$config["dbName"] = $_POST["dbName"];
-			$config["dbUser"] = $_POST["dbUser"];
-			$config["dbPassword"] = $_POST["dbPassword"];
-			$config["TMDBApiKey"] = $_POST["TMDBApiKey"];
-			$config["TTVDBApiKey"] = $_POST["TTVDBApiKey"];
-			$api->updateConfig($config);
+			if (isset($_POST["pathMovies"])){
+				$config = array();
+				$config["pathMovies"] = $_POST["pathMovies"];
+				$config["aliasMovies"] = $_POST["aliasMovies"];
+				$config["moviePics"] = $_POST["moviePics"];
+				$config["aliasMoviePics"] = $_POST["aliasMoviePics"];
+				$config["pathShows"] = $_POST["pathShows"];
+				$config["aliasShows"] = $_POST["aliasShows"];
+				$config["dbHost"] = $_POST["dbHost"];
+				$config["dbName"] = $_POST["dbName"];
+				$config["dbUser"] = $_POST["dbUser"];
+				$config["dbPassword"] = $_POST["dbPassword"];
+				$config["TMDBApiKey"] = $_POST["TMDBApiKey"];
+				$config["TTVDBApiKey"] = $_POST["TTVDBApiKey"];
+				$api->updateConfig($config);
+			}
 			
 			$app->redirect('http://'.$host.'/install');
 		});

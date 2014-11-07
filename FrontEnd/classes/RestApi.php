@@ -33,8 +33,17 @@ class RestAPI{
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_TIMEOUT, 10);
 		$output = curl_exec($ch);
-		curl_close($ch);
 		
+		if ($output === false){
+			$this->raiseException(array("error" => "Call to API failed: ".curl_error($ch), "trace" => array()));
+		}
+		$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		if ($httpcode >= 400){
+			curl_close($ch);
+			$this->raiseException(array("error" => "Call to API failed: ".$httpcode, "trace" => array()));
+		}
+		
+		curl_close($ch);
 		$response = json_decode($output, true);
 		if (isset($response["error"])){
 			$this->raiseException($response);
@@ -55,7 +64,7 @@ class RestAPI{
 		curl_setopt($ch, CURLOPT_HEADER, FALSE);
 		curl_setopt($ch, CURLOPT_POST, TRUE);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $args);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
 		curl_setopt($ch, CURLOPT_TIMEOUT, 10);
 		$output = curl_exec($ch);
 		curl_close($ch);
@@ -68,8 +77,35 @@ class RestAPI{
 		return $response;
 	}
 	
+	private function checkUrl($url){
+		if (!function_exists('curl_init')){
+			die('Sorry cURL is not installed!');
+		}
+		
+		$url = $this->baseUrl.$url;
+		
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_HEADER, TRUE);
+		curl_setopt($ch, CURLOPT_NOBODY, TRUE);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+		$output = curl_exec($ch);
+		$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		curl_close($ch);
+		
+		return ($httpcode < 400);
+	}
+	
 //GENERAL
 
+	public function isValid(){
+		$url = "/config";
+		$resp = $this->checkUrl($url);
+		
+		return $resp;
+	}
+	
 	public function getConfig(){
 		$url = "/config";
 		$config = $this->curlDownload($url);

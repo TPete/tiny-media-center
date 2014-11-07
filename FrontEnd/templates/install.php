@@ -1,4 +1,4 @@
-<form method="post" action="http://192.168.2.2/tv/install">
+<form method="post" action="">
 <div>
 <h2>FrontEnd</h2>
 <?php foreach ($config as $name => $value){?>
@@ -11,6 +11,9 @@
 
 <div>
 <h2>API</h2>
+<?php if (count($apiConfig) === 0){?>
+	API config not available. Please provide/check url to API.
+<?php }?>
 <?php foreach ($apiConfig as $name => $value){?>
 	<label class="config">
 	<?php echo $name;?>
