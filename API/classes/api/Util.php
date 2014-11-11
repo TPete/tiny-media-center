@@ -181,5 +181,19 @@ class Util{
 		imagedestroy($thumbnail_gd_image);
 		return true;
 	}
+
+	public static function getFolders($path){
+		$elements = scandir($path);
+		$folders = array();
+		foreach($elements as $ele){
+			if (!in_array($ele, array(".", ".."))){
+				if (is_dir($path.$ele)){
+					$folders[] = $ele;
+				}
+			}
+		}
+		
+		return $folders;
+	}
 	
 }

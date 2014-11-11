@@ -105,31 +105,15 @@ class ShowController{
 		$this->updateThumbs($category);
 	}
 	
-	private function getFolders($category){
-		$dir = $this->path.$category."/";
-	
-		$elements = scandir($dir);	
-		$folders = array();
-		foreach($elements as $ele){
-			if (!in_array($ele, array(".", ".."))){
-				if (is_dir($dir.$ele)){
-					$folders[] = $ele;
-				}
-			}
-		}
-	
-		return $folders;
-	}
-	
 	private function addMissingShows($category){
-		$folders = $this->getFolders($category);
+		$folders = Util::getFolders($this->path.$category."/");
 		foreach($folders as $folder){
 			$this->SSDB->createIfMissing($category, $folder);
 		}
 	}
 	
 	private function removeObsoleteShows($category){
-		$folders = $this->getFolders($category);
+		$folders = Util::getFolders($this->path.$category."/");
 		$this->SSDB->removeIfObsolete($category, $folders);
 	}
 	
@@ -162,7 +146,7 @@ class ShowController{
 	}
 	
 	private function updateThumbs($category){
-		$folders = $this->getFolders($category);
+		$folders = Util::getFolders($this->path.$category."/");
 		foreach($folders as $folder){
 			$path = $this->path.$category."/".$folder."/";
 			echo $path;
