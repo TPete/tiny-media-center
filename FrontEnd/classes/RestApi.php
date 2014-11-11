@@ -120,6 +120,13 @@ class RestAPI{
 		return $res;
 	}
 	
+	public function getCategories(){
+		$url = "/categories";
+		$res = $this->curlDownload($url);
+		
+		return $res;
+	}
+	
 //SHOWS
 	
 	public function getCategoryOverview($category){

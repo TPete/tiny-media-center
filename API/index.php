@@ -74,6 +74,13 @@ $app->post('/config',
 			$app->redirect('/install');
 		});
 
+$app->get('/categories',
+		function(){
+			$categories = array("shows/serien/" => "Serien", "shows/kinder/" => "Kinder", "movies/" => "Filme");
+			
+			echo json_encode($categories);
+		});
+
 $app->group('/shows', function() use ($app, $config, $db){
 
 	$ShowController = new API\ShowController($config["pathShows"], $config["aliasShows"], 

@@ -134,12 +134,12 @@ function renderException($exp, $host, $app){
 }
 
 $app->get('/',
-		function () use($app, $host){
+		function () use($app, $host, $api){
 			$pageTitle = "Main Index";
 			$header = "TV";
 			$app->render("pageHeader.php", array("pageTitle" => $header." Index", "host" => $host));
 			$app->render("headerBarMovies.php", array("header" => $header));
-			$categories = array("shows/serien/" => "Serien", "shows/kinder/" => "Kinder", "movies/" => "Filme");
+			$categories = $api->getCategories();
 			$app->render("categorySelection.php", array("categories" => $categories));
 			$app->render("pageFooter.php", array("host" => $host));
 		});
