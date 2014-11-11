@@ -186,7 +186,7 @@ class Util{
 		$elements = scandir($path);
 		$folders = array();
 		foreach($elements as $ele){
-			if (!in_array($ele, array(".", ".."))){
+			if (!in_array($ele, array(".", "..", "\$RECYCLE.BIN", "System Volume Information"))){
 				if (is_dir($path.$ele)){
 					$folders[] = $ele;
 				}
