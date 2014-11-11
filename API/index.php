@@ -60,8 +60,6 @@ $app->post('/config',
 			$config = array();
 			$config["pathMovies"] = $_POST["pathMovies"];
 			$config["aliasMovies"] = $_POST["aliasMovies"];
-			$config["moviePics"] = $_POST["moviePics"];
-			$config["aliasMoviePics"] = $_POST["aliasMoviePics"];
 			$config["pathShows"] = $_POST["pathShows"];
 			$config["aliasShows"] = $_POST["aliasShows"];
 			$config["dbHost"] = $_POST["dbHost"];
@@ -140,7 +138,7 @@ $app->group('/shows', function() use ($app, $config, $db){
 $app->group('/movies', function() use ($app, $config, $db){
 	
 	$MovieController = new API\MovieController($config["pathMovies"], $config["aliasMovies"], 
-			$config["moviePics"], $config["aliasMoviePics"], $db, $config["TMDBApiKey"]);
+			$db, $config["TMDBApiKey"]);
 	
 	$app->get('/', 
 			function() use ($MovieController) {

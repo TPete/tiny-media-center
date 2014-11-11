@@ -1,8 +1,6 @@
 {
 	"pathMovies": "/path/to/movies/", 
 	"aliasMovies": "/alias of movies dir/",
-	"moviePics": "/path/to/movie pictures/", 
-	"aliasMoviePics": "/alias of movie pictures/", 
 	"pathShows": "/path/to/tv shows/", 
 	"aliasShows": "/alias of tv shows dir/",
 	"dbHost": "db host name",

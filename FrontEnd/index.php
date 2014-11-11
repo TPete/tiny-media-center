@@ -173,8 +173,6 @@ $app->post('/install',
 				$config = array();
 				$config["pathMovies"] = $_POST["pathMovies"];
 				$config["aliasMovies"] = $_POST["aliasMovies"];
-				$config["moviePics"] = $_POST["moviePics"];
-				$config["aliasMoviePics"] = $_POST["aliasMoviePics"];
 				$config["pathShows"] = $_POST["pathShows"];
 				$config["aliasShows"] = $_POST["aliasShows"];
 				$config["dbHost"] = $_POST["dbHost"];
