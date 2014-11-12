@@ -100,7 +100,14 @@ class ShowController{
 		return $this->SSDB->updateDetails($category, $id, $title, $tvdbId);
 	}
 	
-	public function maintenance($category){
+	public function updateData(){
+		$folders = Util::getFolders($this->path);
+		foreach($folders as $folder){
+			$this->maintenance($folder);
+		}
+	}
+	
+	private function maintenance($category){
 		echo "<h2>Maintenance ".$category."</h2>";
 		echo "<h3>Check missing show entries (new shows)</h3>";
 		$this->addMissingShows($category);

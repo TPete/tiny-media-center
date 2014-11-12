@@ -99,8 +99,7 @@ $app->group('/shows', function() use ($app, $config, $db){
 	$app->get('/maintenance/',
 			function() use ($ShowController){
 				try{
-					$ShowController->maintenance("Serien");
-					$ShowController->maintenance("Kinder");
+					$ShowController->updateData();
 				}
 				catch(Exception $e){
 					handleException($e);
