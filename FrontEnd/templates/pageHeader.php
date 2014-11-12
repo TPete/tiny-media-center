@@ -9,4 +9,5 @@
 <link rel="Stylesheet" type="text/css" href="http://<?php echo $host;?>/style.css?ver=1" />
 </head>
 <body>
+<input type="hidden" id="host" value="<?php echo $host;?>">
 <div class='content-wrapper'>

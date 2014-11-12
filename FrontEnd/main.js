@@ -311,46 +311,34 @@ sections["movies"] = (function(){
 	};
 }());
 
-sections.getCategory = function(){
-	var path = window.location.pathname,
-		split = path.split('/');
+sections.getPath = function(){
+	var path = window.location.href,
+	host = $('#host').val(),
+	split;
+	path = path.substr(path.indexOf(host) + host.length);
+	if (path.substr(0, 1) === '/'){
+		path = path.substr(1);
+	}
 	
-	if (split.length > 2){
-		path = split[2];
-	}
-	else{
-		path = null;
-	}
+	return path.split('/');
+};
+
+sections.getCategory = function(){
+	var path = this.getPath();
 			
-	return path;
+	return path[0];
 };
 
 sections.getSubCategory = function(){
-	var path = window.location.pathname,
-	split = path.split('/');
-
-	if (split.length > 3){
-		path = split[3];
-	}
-	else{
-		path = null;
-	}
-			
-	return path;
+	var path = this.getPath();
+	
+	return path[1];
 }
 
 sections.getId = function(){
-	var path = window.location.pathname,
-		split = path.split('/');
+	var path = this.getPath();
 	
-	if (split.length > 4){
-		path = split[4];
-	}
-	else{
-		path = null;
-	}
-			
-	return path;
+	return path[2];
 };
 
 sections.init = (function(){
