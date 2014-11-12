@@ -1,6 +1,4 @@
 <?php
-
-use API;
 require "classes/Movie.php";
 require "classes/getID3/getid3/getid3.php";
 
@@ -75,8 +73,20 @@ $app->post('/config',
 		});
 
 $app->get('/categories',
-		function(){
-			$categories = array("shows/serien/" => "Serien", "shows/kinder/" => "Kinder", "movies/" => "Filme");
+		function() use($config, $db){
+			//expects tv shows to be in sub folders of $config["pathShows"]
+			//where each sub folder will be listed as a different category
+			
+			//expects movies to be directly in $config["pathMovies"]
+			//which will be listed as a single category
+			//TODO: make this consistent and/or more flexible
+			$ShowController = new API\ShowController($config["pathShows"], $config["aliasShows"],
+								$db, $config["TTVDBApiKey"]);
+			$shows = $ShowController->getCategories();
+			$MovieController = new API\MovieController($config["pathMovies"], $config["aliasMovies"],
+								$db, $config["TMDBApiKey"]);
+			$movies = $MovieController->getCategories();
+			$categories = array_merge($shows, $movies);
 			
 			echo json_encode($categories);
 		});

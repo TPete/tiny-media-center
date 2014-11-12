@@ -16,6 +16,13 @@ class MovieController{
 		$this->MSDB = new MovieStoreDB($dbConfig, $alias, $alias."pictures/");
 	}
 	
+	public function getCategories(){
+		//TODO: replace hard coded values
+		$categories = array("movies/" => "Filme");
+		
+		return $categories;
+	}
+	
 	/**
 	 * Get movies matching the given criteria.
 	 * 

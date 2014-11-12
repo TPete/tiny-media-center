@@ -15,6 +15,16 @@ class ShowController{
 		$this->scraper = new TTVDBWrapper($apiKey);
 	}
 	
+	public function getCategories(){
+		$folders = Util::getFolders($this->path);
+		$shows = array();
+		foreach($folders as $folder){
+			$shows["shows/".strtolower($folder)."/"] = $folder;
+		}
+		
+		return $shows;
+	}
+	
 	public function getList($category){
 		$overview = $this->SSDB->getShows($category);
 		$result = array();
