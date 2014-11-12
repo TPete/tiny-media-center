@@ -23,7 +23,8 @@ class Util{
 	
 	public static function writeJSONFile($file, $data){
 		$json = json_encode($data);
-		$res = file_put_contents($file, $json);
+		$pp = Util::prettyPrint($json);
+		$res = file_put_contents($file, $pp);
 	
 		return ($res !== false);
 	}
