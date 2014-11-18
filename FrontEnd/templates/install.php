@@ -4,7 +4,7 @@
 <?php foreach ($config as $name => $value){?>
 	<label class="config">
 	<?php echo $name;?>
-	<input type="text" name="<?php echo $name;?>" value="<?php echo $value;?>" required="required">
+	<input type="text" name="<?php echo $name;?>" id="<?php echo $name;?>" value="<?php echo $value;?>" required="required">
 	</label>
 <?php }?>
 </div>
@@ -17,7 +17,7 @@
 <?php foreach ($apiConfig as $name => $value){?>
 	<label class="config">
 	<?php echo $name;?>
-	<input type="text" name="<?php echo $name;?>" value="<?php echo $value;?>" required="required">
+	<input type="text" name="<?php echo $name;?>" id="<?php echo $name;?>" value="<?php echo $value;?>" required="required">
 	</label>
 <?php }?>
 </div>
