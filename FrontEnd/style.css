@@ -724,3 +724,21 @@ a.movie-info, a.collection-info{
 #movie-poster-dialog > img{
 	width: 100%;
 }
+
+.highlight-valid {
+	outline: 2px solid #008000;
+}
+
+.highlight-invalid {
+	outline: 2px solid #B00000;
+}
+
+.config-box{
+	width: 300px;
+	border: 2px solid #505000;
+	background: #ebd042;
+	position: absolute;
+	left: 500px;
+	color: #333333;
+	padding: 10px;
+}

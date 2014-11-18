@@ -1,4 +1,6 @@
-var main, sections = {};
+var main, sections = {}, host = $('#host').val();
+
+
 
 sections["shows"] = (function(){
 	"use strict";
@@ -304,6 +306,175 @@ sections["movies"] = (function(){
 		$('.movie-overview-poster')
 		.eq(0)
 		.trigger('click');
+	};
+	
+	return {
+		init: init
+	};
+}());
+
+sections['install'] = (function(){
+	"use strict";
+	var init;
+	
+	function markValid(obj){
+		$(obj)
+		.removeClass('highlight-valid')
+		.removeClass('highlight-invalid')
+		.addClass('highlight-valid');
+	}
+	
+	function markInvalid(obj){
+		$(obj)
+		.removeClass('highlight-valid')
+		.removeClass('highlight-invalid')
+		.addClass('highlight-invalid');
+	}
+	
+	function showMessageBox(id, msg, referenceId){
+		$('.content-wrapper').append('<div id="' + id + '" class="config-box">' + msg + '</div>');						
+		$('#' + id).css('top', $('#' + referenceId).position().top);
+	}
+	
+	init = function(){
+		$('#restUrl')
+		.on('change', function(){
+			var obj = this,
+				id = $(this).attr('id'),
+				data = {};
+			data[id] = $(obj).val();
+			$.ajax({
+				url: 'install/check/restUrl',
+				data: data,
+				success: function(data){
+					if (data === 'Ok'){
+						markValid(obj);
+					}
+					else{
+						markInvalid(obj);
+					}
+				},
+				error: function(jqXHR, textStatus, errorThrown){
+					alert(errorThrown);
+				}
+			});
+		});
+		$('#dbHost, #dbName, #dbUser, #dbPassword')
+		.on('change', function(){
+			var restUrl = $('#restUrl').val(),
+				dbHost = $('#dbHost').val(),
+				dbName = $('#dbName').val(),
+				dbUser = $('#dbUser').val(),
+				dbPassword = $('#dbPassword').val();
+			$('#db-box').remove();
+			if (restUrl.length > 0 && dbHost.length > 0 && dbName.length > 0 && dbUser.length > 0 && dbPassword.length > 0){
+				$.ajax({
+					url: 'install/check/db',
+					data: {
+						dbHost: dbHost,
+						dbName: dbName,
+						dbUser: dbUser,
+						dbPassword: dbPassword,
+						restUrl: restUrl
+					},
+					success: function(data){
+						var msg;
+						data = JSON.parse(data);
+						if (data['dbAccess'] === 'Ok'){
+							markValid('#dbHost');
+							markValid('#dbName');
+							markValid('#dbUser');
+							markValid('#dbPassword');
+							if (data['dbSetup'] === 'Ok'){
+								msg = 'All required database tables are present.';
+							}
+							else{
+								msg = 'The database setup is incomplete. Would you like to setup the database now?';
+							}
+							showMessageBox('db-box', msg, 'dbHost');
+						}
+						else{
+							markInvalid('#dbHost');
+							markInvalid('#dbName');
+							markInvalid('#dbUser');
+							markInvalid('#dbPassword');
+						}
+					},
+					error: function(jqXHR, textStatus, errorThrown){
+						alert(errorThrown);
+					}
+				});
+			}
+		});
+		$('#pathMovies, #aliasMovies')
+		.on('change', function(){
+			var restUrl = $('#restUrl').val(),
+				pathMovies = $('#pathMovies').val(),
+				aliasMovies = $('#aliasMovies').val();
+			if (restUrl.length > 0 && pathMovies.length > 0 && aliasMovies.length > 0){
+				$.ajax({
+					url: 'install/check/movies',
+					data: {
+						pathMovies: pathMovies,
+						aliasMovies: aliasMovies,
+						restUrl: restUrl
+					},
+					success: function(data){
+						if (data === 'Ok'){
+							markValid('#pathMovies');
+							markValid('#aliasMovies');
+						}
+						else{
+							markInvalid('#pathMovies');
+							markInvalid('#aliasMovies');
+						}
+					},
+					error: function(jqXHR, textStatus, errorThrown){
+						alert(errorThrown);
+					}
+				});
+			}
+		});
+		$('#pathShows, #aliasShows')
+		.on('change', function(){
+			var restUrl = $('#restUrl').val(),
+				pathShows = $('#pathShows').val(),
+				aliasShows = $('#aliasShows').val();
+			$('#shows-box').remove();
+			if (restUrl.length > 0 && pathShows.length > 0 && aliasShows.length > 0){
+				$.ajax({
+					url: 'install/check/shows',
+					data: {
+						pathShows: pathShows,
+						aliasShows: aliasShows,
+						restUrl: restUrl
+					},
+					success: function(data){
+						var msg = 'The following sub folders where found and will be used as categories: ',
+							top;
+						data = JSON.parse(data);
+						if (data['result'] === 'Ok'){
+							data['folders'].forEach(function(element){
+								msg += element + ', ';
+							});
+							msg = msg.substr(0, msg.length - 2);
+							markValid('#pathShows');
+							markValid('#aliasShows');
+							showMessageBox('shows-box', msg, 'pathShows');
+						}
+						else{
+							markInvalid('#pathShows');
+							markInvalid('#aliasShows');
+						}
+					},
+					error: function(jqXHR, textStatus, errorThrown){
+						alert(errorThrown);
+					}
+				});
+			}
+		});
+		
+		$('#restUrl, #dbHost, #pathMovies, #pathShows').trigger('change');
 	};
 	
 	return {

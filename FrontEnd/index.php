@@ -187,6 +187,39 @@ $app->post('/install',
 			$app->redirect('http://'.$host.'/install');
 		});
 
+$app->get('/install/check/:type/',
+		function($type){
+			if ($type === "restUrl"){
+				$api = new RestAPI($_GET["restUrl"]);
+				echo $api->isValid() ? "Ok" : "Error";
+			}
+			if ($type === "db"){
+				$api = new RestAPI($_GET["restUrl"]);
+				$args = array("host" => $_GET["dbHost"], "name" => $_GET["dbName"],
+							"user" => $_GET["dbUser"], "password" => $_GET["dbPassword"]);
+				if ($api->isValid()){
+					$res = $api->check("db", $args);
+					echo json_encode($res);					
+				}
+				else{
+					echo "Error";
+				}
+			}
+			if ($type === "movies"){
+				$api = new RestAPI($_GET["restUrl"]);
+				$args = array("pathMovies" => $_GET["pathMovies"], "aliasMovies" => $_GET["aliasMovies"]);
+				$res = $api->check("movies", $args);
+				echo $res["result"];
+				
+			}
+			if ($type === "shows"){
+				$api = new RestAPI($_GET["restUrl"]);
+				$args = array("pathShows" => $_GET["pathShows"], "aliasShows" => $_GET["aliasShows"]);
+				$res = $api->check("shows", $args);
+				echo json_encode($res);
+			}
+		});
+
 $app->group('/shows', function() use ($app, $host, $api) {
 
 	$app->get('/:category/edit/:id',
