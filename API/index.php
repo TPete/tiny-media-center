@@ -53,6 +53,56 @@ $app->get('/config',
 			echo json_encode($config);
 		});
 
+$app->get('/config/check/:type',
+		function($type){
+			if ($type === "db"){
+				$res = array();
+				try{
+					$db = new PDO("mysql:host=".$_GET["host"].";dbname=".$_GET["name"], $_GET["user"], $_GET["password"]);
+					$res["dbAccess"] = "Ok";
+					$db = array("host" => $_GET["host"],
+							"name" => $_GET["name"],
+							"user" => $_GET["user"],
+							"password" => $_GET["password"]);
+					$ShowStore = new API\ShowStoreDB($db);
+					$checkShows = $ShowStore->checkSetup();
+					$MovieStore = new API\MovieStoreDB($db, "", "");
+					$checkMovies = $MovieStore->checkSetup();
+					if ($checkShows && $checkMovies){
+						$res["dbSetup"] = "Ok";
+					}
+					else{
+						$res["dbSetup"] =  "Error";
+					}
+				}
+				catch (PDOException $e){
+					$res["dbAccess"] =  "Error: ".$e->getMessage();
+					$res["dbSetup"] =  "Error";
+				}
+				echo json_encode($res);
+			}
+			if ($type === "movies"){
+				if (is_dir($_GET["pathMovies"]) and API\Util::checkUrl($_GET["aliasMovies"])){
+					$res["result"] = "Ok";
+				}
+				else{
+					$res["result"] =  "Error";
+				}
+				echo json_encode($res);
+			}
+			if ($type === "shows"){
+				if (is_dir($_GET["pathShows"]) and API\Util::checkUrl($_GET["aliasShows"])){
+					$res["result"] = "Ok";
+					$folders = API\Util::getFolders($_GET["pathShows"]);
+					$res["folders"] = $folders;
+				}
+				else{
+					$res["result"] =  "Error";
+				}
+				echo json_encode($res);
+			}
+		});
+
 $app->post('/config', 
 		function() use ($app){
 			$config = array();

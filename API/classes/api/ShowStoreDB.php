@@ -22,6 +22,24 @@ class ShowStoreDB{
 		return $db;
 	}
 	
+	public function checkSetup(){
+		$db = $this->connect();
+		$result = true;
+		$tables = array("shows", "show_episodes");
+		foreach ($tables as $table){
+			try{
+				$sql = "SELECT 1 FROM ".$table." LIMIT 1;";
+				$stmt = $db->prepare($sql);
+				$stmt->execute();
+				$result = $result && true;
+			}
+			catch (\PDOException $e){
+				$result = false;
+			}
+		}
+		return $result;
+	}
+	
 	public function getShows($category){
 		$db = $this->connect();
 		$sql = "Select id, title, folder, tvdb_id

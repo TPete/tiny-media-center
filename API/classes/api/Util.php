@@ -196,5 +196,23 @@ class Util{
 		
 		return $folders;
 	}
+
+	public static function checkUrl($url){
+		if (!function_exists('curl_init')){
+			die('Sorry cURL is not installed!');
+		}
+	
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_HEADER, TRUE);
+		curl_setopt($ch, CURLOPT_NOBODY, TRUE);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+		$output = curl_exec($ch);
+		$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		curl_close($ch);
+	
+		return ($httpcode < 400);
+	}
 	
 }

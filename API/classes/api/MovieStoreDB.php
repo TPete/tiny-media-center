@@ -26,6 +26,24 @@ class MovieStoreDB{
 		return $db;
 	}
 	
+	public function checkSetup(){
+		$db = $this->connect();
+		$result = true;
+		$tables = array("movies", "lists", "list_parts", "collections", "collection_parts");
+		foreach ($tables as $table){
+			try{
+				$sql = "SELECT 1 FROM ".$table." LIMIT 1;";
+				$stmt = $db->prepare($sql);
+				$stmt->execute();
+				$result = $result && true;
+			}
+			catch (\PDOException $e){
+				$result = false;
+			}
+		}
+		return $result;
+	}
+	
 	public function getMovies($sort, $order, $filter, $genres, $cnt, $offset){
 		$db = $this->connect();
 		$sqlCols = "Select mov.id, mov.movie_db_id, mov.title, mov.filename, mov.overview, mov.release_date, mov.genres,
