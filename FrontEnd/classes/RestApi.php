@@ -127,6 +127,13 @@ class RestAPI{
 		return $res;
 	}
 	
+	public function check($type, $args){
+		$url = "/config/check/".$type;
+		$res = $this->curlDownload($url, $args);
+		
+		return $res;
+	}
+	
 //SHOWS
 	
 	public function getCategoryOverview($category){
