@@ -1,56 +1,16 @@
 <?php
 namespace API;
 
-class MovieStoreDB{
+class MovieStoreDB extends Store{
 	
-	private $host;
-	private $db;
-	private $user;
-	private $password;
 	private $alias;
 	private $pictureAlias;
-	private $tables = array("movies", "lists", "list_parts", "collections", "collection_parts");
 	
 	public function __construct($config, $alias, $pictureAlias){
-		$this->host = $config["host"];
-		$this->db = $config["name"];
-		$this->user = $config["user"];
-		$this->password = $config["password"];
+		$tables = array("movies", "lists", "list_parts", "collections", "collection_parts");
+		parent::__construct($config, $tables);
 		$this->alias = $alias;
 		$this->pictureAlias = $pictureAlias;
-	}
-	
-	private function connect(){
-		$db = new \PDO("mysql:host=".$this->host.";dbname=".$this->db, $this->user, $this->password);
-		$db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-		
-		return $db;
-	}
-	
-	public function checkSetup(){
-		$db = $this->connect();
-		$result = true;
-		foreach ($this->tables as $table){
-			try{
-				$sql = "SELECT 1 FROM ".$table." LIMIT 1;";
-				$stmt = $db->prepare($sql);
-				$stmt->execute();
-				$result = $result && true;
-			}
-			catch (\PDOException $e){
-				$result = false;
-			}
-		}
-		return $result;
-	}
-	
-	public function setupDB(){
-		$db = $this->connect();
-		foreach ($this->tables as $table){
-			$sql = file_get_contents("sql/".$table.".sql");
-			$stmt = $db->prepare($sql);
-			$stmt->execute();
-		}
 	}
 	
 	public function getMovies($sort, $order, $filter, $genres, $cnt, $offset){
