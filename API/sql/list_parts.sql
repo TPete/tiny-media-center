@@ -1,4 +1,4 @@
-CREATE TABLE `list_parts` (
+CREATE TABLE IF NOT EXISTS `list_parts` (
  `ID` int(11) NOT NULL AUTO_INCREMENT,
  `LIST_ID` int(11) NOT NULL,
  `MOVIE_ID` int(11) NOT NULL,

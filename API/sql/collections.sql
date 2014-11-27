@@ -1,4 +1,4 @@
-CREATE TABLE `collections` (
+CREATE TABLE IF NOT EXISTS `collections` (
  `ID` int(11) NOT NULL AUTO_INCREMENT,
  `MOVIE_DB_ID` int(11) NOT NULL,
  `NAME` varchar(200) NOT NULL,

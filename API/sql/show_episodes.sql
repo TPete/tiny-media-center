@@ -1,4 +1,4 @@
-CREATE TABLE `show_episodes` (
+CREATE TABLE IF NOT EXISTS `show_episodes` (
  `ID` int(11) NOT NULL AUTO_INCREMENT,
  `SHOW_ID` int(11) NOT NULL,
  `SEASON_NO` int(11) NOT NULL,
