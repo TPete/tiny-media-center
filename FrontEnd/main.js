@@ -390,6 +390,7 @@ sections['install'] = (function(){
 							}
 							else{
 								msg = 'The database setup is incomplete. Would you like to setup the database now?';
+								msg += '<br><form method="POST" action="install/db" id="install-db-form"><button tpye="submit">Setup DB</button></form'
 							}
 							showMessageBox('db-box', msg, 'dbHost');
 						}

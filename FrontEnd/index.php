@@ -220,6 +220,12 @@ $app->get('/install/check/:type/',
 			}
 		});
 
+$app->post('/install/db', 
+		function() use ($app, $host, $api){
+			$res = $api->setupDB();
+			$app->redirect("http://".$host."/install");
+		});
+
 $app->group('/shows', function() use ($app, $host, $api) {
 
 	$app->get('/:category/edit/:id',
