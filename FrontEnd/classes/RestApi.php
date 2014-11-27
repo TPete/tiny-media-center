@@ -52,7 +52,7 @@ class RestAPI{
 		return $response;
 	}
 	
-	private function curlPost($url, $args){
+	private function curlPost($url, $args = ""){
 		if (!function_exists('curl_init')){
 			die('Sorry cURL is not installed!');
 		}
@@ -130,6 +130,13 @@ class RestAPI{
 	public function check($type, $args){
 		$url = "/config/check/".$type;
 		$res = $this->curlDownload($url, $args);
+		
+		return $res;
+	}
+	
+	public function setupDB(){
+		$url = "/config/db";
+		$res = $this->curlPost($url);
 		
 		return $res;
 	}
