@@ -122,6 +122,27 @@ $app->post('/config',
 			$app->redirect('/install');
 		});
 
+$app->post('/config/db',
+		function() use($db){
+			try{
+				$ShowStore = new API\ShowStoreDB($db);
+				$checkShows = $ShowStore->checkSetup();
+				$MovieStore = new API\MovieStoreDB($db, "", "");
+				$checkMovies = $MovieStore->checkSetup();
+				if (!$checkShows && !$checkMovies){
+					$ShowStore->setupDB();
+					$MovieStore->setupDB();
+					echo "Ok";
+				}
+				else{
+					echo "Error";
+				}
+			}
+			catch(Exception $e){
+				handleException($e);
+			}
+		});
+
 $app->get('/categories',
 		function() use($config, $db){
 			//expects tv shows to be in sub folders of $config["pathShows"]
