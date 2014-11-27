@@ -173,27 +173,7 @@ class ShowController{
 			echo "<br>";
 		}
 	}
-	
-	
-	
-	private function readConfig($dir){
-		$filename = "config.txt"; //manual data
-		$config = Util::readJSONFile($dir.$filename);
-	
-		if (!isset($config["useEpisodesFile"]) or
-				(isset($config["useEpisodesFile"]) and $config["useEpisodesFile"])){
-			$filename = $dir."episodes.txt";
-			if (file_exists($filename)){
-				$epsJson = Util::readJSONFile($filename);
-				if (count($epsJson) > 0){
-					$config["episodes"] = $epsJson;
-				}
-			}
-		}
-	
-		return $config;
-	}
-	
+		
 	private function getFileLink($seasonNo, $episodeNo, $files, $baseDir){
 		if (strlen($episodeNo) === 1){
 			$episodeNo = "0".$episodeNo;
