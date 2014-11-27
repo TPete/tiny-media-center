@@ -9,6 +9,7 @@ class MovieStoreDB{
 	private $password;
 	private $alias;
 	private $pictureAlias;
+	private $tables = array("movies", "lists", "list_parts", "collections", "collection_parts");
 	
 	public function __construct($config, $alias, $pictureAlias){
 		$this->host = $config["host"];
@@ -29,8 +30,7 @@ class MovieStoreDB{
 	public function checkSetup(){
 		$db = $this->connect();
 		$result = true;
-		$tables = array("movies", "lists", "list_parts", "collections", "collection_parts");
-		foreach ($tables as $table){
+		foreach ($this->tables as $table){
 			try{
 				$sql = "SELECT 1 FROM ".$table." LIMIT 1;";
 				$stmt = $db->prepare($sql);
@@ -42,6 +42,15 @@ class MovieStoreDB{
 			}
 		}
 		return $result;
+	}
+	
+	public function setupDB(){
+		$db = $this->connect();
+		foreach ($this->tables as $table){
+			$sql = file_get_contents("sql/".$table.".sql");
+			$stmt = $db->prepare($sql);
+			$stmt->execute();
+		}
 	}
 	
 	public function getMovies($sort, $order, $filter, $genres, $cnt, $offset){

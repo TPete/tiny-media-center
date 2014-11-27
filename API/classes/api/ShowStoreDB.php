@@ -7,6 +7,7 @@ class ShowStoreDB{
 	private $db;
 	private $user;
 	private $password;
+	private $tables = array("shows", "show_episodes");
 
 	public function __construct($config){
 		$this->host = $config["host"];
@@ -25,8 +26,7 @@ class ShowStoreDB{
 	public function checkSetup(){
 		$db = $this->connect();
 		$result = true;
-		$tables = array("shows", "show_episodes");
-		foreach ($tables as $table){
+		foreach ($this->tables as $table){
 			try{
 				$sql = "SELECT 1 FROM ".$table." LIMIT 1;";
 				$stmt = $db->prepare($sql);
@@ -38,6 +38,15 @@ class ShowStoreDB{
 			}
 		}
 		return $result;
+	}
+	
+	public function setupDB(){
+		$db = $this->connect();
+		foreach ($this->tables as $table){
+			$sql = file_get_contents("sql/".$table.".sql");
+			$stmt = $db->prepare($sql);
+			$stmt->execute();
+		}
 	}
 	
 	public function getShows($category){
