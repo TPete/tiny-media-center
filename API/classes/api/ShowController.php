@@ -1,18 +1,12 @@
 <?php
 namespace API;
 
-class ShowController{
-	
-	private $path;
-	private $alias;
-	private $SSDB;
-	private $scraper;
-	
+class ShowController extends Controller{
+		
 	public function __construct($path, $alias, $dbConfig, $apiKey){
-		$this->path = $path;
-		$this->alias = $alias;
-		$this->SSDB = new ShowStoreDB($dbConfig);
-		$this->scraper = new TTVDBWrapper($apiKey);
+		$store = new ShowStoreDB($dbConfig);
+		$scraper = new TTVDBWrapper($apiKey);
+		parent::__construct($path, $alias, $store, $scraper);
 	}
 	
 	public function getCategories(){
@@ -26,7 +20,7 @@ class ShowController{
 	}
 	
 	public function getList($category){
-		$overview = $this->SSDB->getShows($category);
+		$overview = $this->store->getShows($category);
 		$result = array();
 		foreach($overview as $show){
 			$result[] = array("folder" => $show["folder"], "title" => $show["title"],
@@ -38,8 +32,8 @@ class ShowController{
 	}
 	
 	public function getDetails($category, $id){
-		$episodesData = $this->SSDB->getEpisodes($category, $id);
-		$showDetails = $this->SSDB->getShowDetails($category, $id);
+		$episodesData = $this->store->getEpisodes($category, $id);
+		$showDetails = $this->store->getShowDetails($category, $id);
 		$base = $this->path.$category."/".$id."/";
 		$files = glob($base."*.avi");
 		
@@ -93,11 +87,11 @@ class ShowController{
 	}
 	
 	public function getEpisodeDescription($category, $id){
-		return $this->SSDB->getEpisodeDescription($category, $id);
+		return $this->store->getEpisodeDescription($category, $id);
 	}
 	
 	public function updateDetails($category, $id, $title, $tvdbId){
-		return $this->SSDB->updateDetails($category, $id, $title, $tvdbId);
+		return $this->store->updateDetails($category, $id, $title, $tvdbId);
 	}
 	
 	public function updateData(){
@@ -125,17 +119,17 @@ class ShowController{
 	private function addMissingShows($category){
 		$folders = Util::getFolders($this->path.$category."/");
 		foreach($folders as $folder){
-			$this->SSDB->createIfMissing($category, $folder);
+			$this->store->createIfMissing($category, $folder);
 		}
 	}
 	
 	private function removeObsoleteShows($category){
 		$folders = Util::getFolders($this->path.$category."/");
-		$this->SSDB->removeIfObsolete($category, $folders);
+		$this->store->removeIfObsolete($category, $folders);
 	}
 	
 	private function updateEpisodes($category){
-		$shows = $this->SSDB->getShows($category);
+		$shows = $this->store->getShows($category);
 		foreach($shows as $show){
 			echo "Updating ".$show["title"]." ... ";
 			if ($show["tvdb_id"] === null){
@@ -143,7 +137,7 @@ class ShowController{
 				$id = $this->scraper->getSeriesId($search);
 				$path = $this->path.$category."/".$show["folder"]."/bg.jpg";
 				$this->scraper->downloadBG($id, $path);
-				$this->SSDB->updateDetails($category, $show["folder"], $show["title"], $id);
+				$this->store->updateDetails($category, $show["folder"], $show["title"], $id);
 			}
 			else{
 				$id = $show["tvdb_id"];
@@ -151,7 +145,7 @@ class ShowController{
 			echo "Scraping ... ";
 			$seasons = $this->scraper->getSeriesInfoById($id);
 			if (count($seasons) > 0){
-				$this->SSDB->updateEpisodes($show["id"], $seasons);
+				$this->store->updateEpisodes($show["id"], $seasons);
 				echo "Done";
 			}
 			else{

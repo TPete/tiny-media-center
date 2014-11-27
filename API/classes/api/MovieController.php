@@ -1,19 +1,15 @@
 <?php
 namespace API;
 
-class MovieController{
+class MovieController extends Controller{
 	
-	private $path;
 	private $picturePath;
-	private $Scraper;
-	private $MSDB;
-	
 	
 	public function __construct($path, $alias, $dbConfig, $apiKey){
-		$this->path = $path;
+		$scraper = new TMDBWrapper($path, $this->picturePath, $apiKey);
+		$store = new MovieStoreDB($dbConfig, $alias, $alias."pictures/");
+		parent::__construct($path, $alias, $store, $scraper);
 		$this->picturePath = $path."pictures/";
-		$this->Scraper = new TMDBWrapper($path, $this->picturePath, $apiKey);
-		$this->MSDB = new MovieStoreDB($dbConfig, $alias, $alias."pictures/");
 	}
 	
 	public function getCategories(){
@@ -37,7 +33,7 @@ class MovieController{
 	 * 
 	 */
 	public function getMovies($sort, $order, $filter, $genre, $cnt, $offset){
-		return $this->MSDB->getMovies($sort, $order, $filter, $genre, $cnt, $offset);
+		return $this->store->getMovies($sort, $order, $filter, $genre, $cnt, $offset);
 	}
 	
 	/**
@@ -52,7 +48,7 @@ class MovieController{
 	 *
 	 */
 	public function getMoviesForCollection($collectionID, $cnt, $offset){
-		return $this->MSDB->getMoviesForCollection($collectionID, $cnt, $offset);
+		return $this->store->getMoviesForCollection($collectionID, $cnt, $offset);
 	}
 	
 	/**
@@ -67,7 +63,7 @@ class MovieController{
 	 *
 	 */
 	public function getMoviesForList($listId, $cnt, $offset){
-		return $this->MSDB->getMoviesForList($listId, $cnt, $offset);
+		return $this->store->getMoviesForList($listId, $cnt, $offset);
 	}
 	
 	/**
@@ -78,7 +74,7 @@ class MovieController{
 	 * @return the movie details, an error message if the movie was not found
 	 */
 	public function getMovieDetails($id){
-		$movie = $this->MSDB->getMovieById($id);
+		$movie = $this->store->getMovieById($id);
 		if (isset($movie["error"])){
 			return $movie;
 		}
@@ -92,10 +88,10 @@ class MovieController{
 	}
 	
 	public function updateFromScraper($dbid, $movieDBID, $filename){
-		$movie = $this->Scraper->getMovieInfo($movieDBID, $this->path, $filename);
+		$movie = $this->scraper->getMovieInfo($movieDBID, $this->path, $filename);
 		if ($movie !== null){
-			$this->Scraper->downloadPoster($movie->getId(), $movie->getPosterPath());
-			$this->MSDB->updateMovieById($movie->toArray(), $dbid, $this->path);
+			$this->scraper->downloadPoster($movie->getId(), $movie->getPosterPath());
+			$this->store->updateMovieById($movie->toArray(), $dbid, $this->path);
 			$this->resizeMoviePics($this->picturePath);
 		}
 		
@@ -103,16 +99,16 @@ class MovieController{
 	}
 		
 	public function lookupMovie($id){
-		$movie = $this->Scraper->getMovieInfo($id);
+		$movie = $this->scraper->getMovieInfo($id);
 		
 		return $movie->toArray();
 	}
 		
 	private function searchMovie($title, $filename){
-		$movie = $this->Scraper->searchMovie($title, $filename);
+		$movie = $this->scraper->searchMovie($title, $filename);
 		if ($movie !== null){
-			$this->Scraper->downloadPoster($movie->getId(), $movie->getPosterPath());
-			$this->MSDB->updateMovie($movie->toArray(), $this->path);
+			$this->scraper->downloadPoster($movie->getId(), $movie->getPosterPath());
+			$this->store->updateMovie($movie->toArray(), $this->path);
 
 			return "OK:".$movie;
 		}
@@ -122,18 +118,18 @@ class MovieController{
 	}
 	
 	public function getGenres(){
-		return $this->MSDB->getGenres();
+		return $this->store->getGenres();
 	}
 	
 	public function getLists(){
-		return $this->MSDB->getLists();
+		return $this->store->getLists();
 	}
 	
 	public function getCollections(){
-		return $this->MSDB->getCollections();
+		return $this->store->getCollections();
 	}
 	
-	public function maintenance(){
+	public function updateData(){
 		echo "<h1>Maintenance</h1>";
 		echo "<h2>Duplicate movie files</h2>";
 		$res = $this->checkDuplicateFiles($this->path);
@@ -141,7 +137,7 @@ class MovieController{
 			echo $movie."<br>";
 		}
 				
-		$res = $this->MSDB->checkExisting($this->path);
+		$res = $this->store->checkExisting($this->path);
 		
 		echo "<h2>Missing movie entries (new movies)</h2>";
 		foreach($res["missing"] as $filename){
@@ -158,10 +154,10 @@ class MovieController{
 		}
 		
 		echo "<h2>Obsolete movie entries</h2>";
-		$this->MSDB->checkRemovedFiles($this->path);
+		$this->store->checkRemovedFiles($this->path);
 		
 		echo "<h2>Missing collection entries</h2>";
-		$res = $this->MSDB->checkCollections();
+		$res = $this->store->checkCollections();
 		foreach($res["missing"] as $miss){
 			$col = $this->updateCollectionFromScraper($miss);
 			var_dump($col);
@@ -176,7 +172,7 @@ class MovieController{
 		}
 		
 		echo "<h2>Fetching missing Movie Pics</h2>";
-		$res = $this->MSDB->getMissingPics($this->picturePath);
+		$res = $this->store->getMissingPics($this->picturePath);
 		foreach($res["missing"] as $miss){
 			echo "fetching ".$miss["MOVIE_DB_ID"]."<br>";
 			$this->downloadMoviePic($miss["MOVIE_DB_ID"]);
@@ -189,9 +185,9 @@ class MovieController{
 	}
 	
 	private function downloadMoviePic($id){
-		$movie = $this->Scraper->getMovieInfo($id);
+		$movie = $this->scraper->getMovieInfo($id);
 		if ($movie !== null){
-			$this->Scraper->downloadPoster($movie->getId(), $movie->getPosterPath());
+			$this->scraper->downloadPoster($movie->getId(), $movie->getPosterPath());
 			return "OK";
 		}
 		return "No Match";
@@ -267,16 +263,16 @@ class MovieController{
 	}
 	
 	private function updateCollectionFromScraper($collectionId){
-		$collectionData = $this->Scraper->getCollectionInfo($collectionId);
+		$collectionData = $this->scraper->getCollectionInfo($collectionId);
 		if ($collectionData !== null){
-			$this->MSDB->updateCollectionById($collectionData, $collectionId);
+			$this->store->updateCollectionById($collectionData, $collectionId);
 		}
 		
 		return $collectionData;
 	}
 	
 	private function removeObsoleteCollection($collectionId){
-		$this->MSDB->removeObsoleteCollection($collectionId);
+		$this->store->removeObsoleteCollection($collectionId);
 	}
 	
 }
