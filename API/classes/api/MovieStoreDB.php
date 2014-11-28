@@ -2,15 +2,10 @@
 namespace API;
 
 class MovieStoreDB extends Store{
-	
-	private $alias;
-	private $pictureAlias;
-	
-	public function __construct($config, $alias, $pictureAlias){
+		
+	public function __construct($config){
 		$tables = array("movies", "lists", "list_parts", "collections", "collection_parts");
 		parent::__construct($config, $tables);
-		$this->alias = $alias;
-		$this->pictureAlias = $pictureAlias;
 	}
 	
 	public function getMovies($sort, $order, $filter, $genres, $cnt, $offset){
@@ -108,7 +103,6 @@ class MovieStoreDB extends Store{
 			$stmt = $db->query($sql);
 			$list = array();
 			while($row = $stmt->fetch(\PDO::FETCH_ASSOC)){
-				$row["poster"] = $this->pictureAlias.$row["movie_db_id"]."_333x500.jpg";
 				$list[] = $row;
 			}
 			return array("list" => $list, "cnt" => $rowCount);
@@ -147,7 +141,6 @@ class MovieStoreDB extends Store{
 			$stmt->execute();
 			$list = array();
 			while($row =$stmt->fetch(\PDO::FETCH_ASSOC)){
-				$row["poster"] = $this->pictureAlias.$row["movie_db_id"]."_333x500.jpg";
 				$list[] = $row;
 			}
 			return array("list" => $list, "cnt" => $rowCount);
@@ -184,7 +177,6 @@ class MovieStoreDB extends Store{
 			$stmt->execute();
 			$list = array();
 			while($row = $stmt->fetch(\PDO::FETCH_ASSOC)){
-				$row["poster"] = $this->pictureAlias.$row["movie_db_id"]."_333x500.jpg";
 				$list[] = $row;
 			}
 			return array("list" => $list, "cnt" => $rowCount);
@@ -211,8 +203,6 @@ class MovieStoreDB extends Store{
 		$stmt->bindValue(":id", $id, \PDO::PARAM_INT);
 		$stmt->execute();
 		$row = $stmt->fetch(\PDO::FETCH_ASSOC);
-		$row["filename"] = $this->alias.$row["filename"];
-		$row["poster"] = $this->pictureAlias.$row["movie_db_id"]."_333x500.jpg";
 		
 		$stmt = $db->prepare($sqlLists);
 		$stmt->bindValue(":id", $id, \PDO::PARAM_INT);
