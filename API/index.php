@@ -1,6 +1,5 @@
 <?php
 require "classes/Movie.php";
-require "classes/getID3/getid3/getid3.php";
 
 require "classes/api/Util.php";
 require "classes/api/Store.php";
@@ -13,7 +12,8 @@ require "classes/api/TMDBWrapper.php";
 require "classes/api/MovieController.php";
 require "classes/api/MovieStoreDB.php";
 
-require 'lib/Slim/Slim.php';
+require "lib/getID3/getid3/getid3.php";
+require "lib/Slim/Slim.php";
 
 \Slim\Slim::registerAutoloader();
 
