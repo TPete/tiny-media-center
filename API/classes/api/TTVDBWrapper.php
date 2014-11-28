@@ -2,59 +2,19 @@
 
 namespace API;
 
-class TTVDBWrapper{
+class TTVDBWrapper extends DBAPIWrapper{
 
 	
 	private $apiKey;
-	private $baseUrl = "http://thetvdb.com/api/";
 	private $imageBaseUrl = "http://thetvdb.com/banners/fanart/original/";
 	
 	public function __construct($apiKey){
+		parent::__construct("http://thetvdb.com/api/");
 		$this->apiKey = $apiKey;
 	}
 	
-	private function curlDownload($url, $args = array()){
-		if (!function_exists('curl_init')){
-			die('Sorry cURL is not installed!');
-		}
-		$ch = curl_init($url);
-		curl_setopt($ch, CURLOPT_HEADER, FALSE);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array("Accept: application/xml"));
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-		$output = curl_exec($ch);
-		curl_close($ch);
-	
-		return $output;
-	}
-	
-	private function downloadImage($url, $file){
-		var_dump($url);
-		$ch = curl_init($url);
-		curl_setopt($ch, CURLOPT_HEADER, 0);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_BINARYTRANSFER,1);
-		$raw = curl_exec($ch);
-		curl_close ($ch);
-		if(file_exists($file)){
-			unlink($file);
-		}
-		$fp = fopen($file,'x');
-		fwrite($fp, $raw);
-		fclose($fp);
-	}
-	
-	public function getServerTime(){
-		$url = $this->baseUrl."Updates.php?type=none";
-		$raw = $this->curlDownload($url);
-		$xml = new \SimpleXMLElement($raw);
-		$time = $xml->Time;
-		
-		return (string)$time;
-	}
-	
 	public function getSeriesId($name){
-		$url = $this->baseUrl."GetSeries.php?language=de&seriesname=".$name;
+		$url = "GetSeries.php?language=de&seriesname=".$name;
 		$raw = $this->curlDownload($url);
 		$xml = new \SimpleXMLElement($raw);
 		$id = $xml->Series[0]->id;
@@ -63,7 +23,7 @@ class TTVDBWrapper{
 	}
 	
 	public function getSeriesInfoById($id){
-		$url = $this->baseUrl.$this->apiKey."/series/".$id."/all/de.xml";
+		$url = $this->apiKey."/series/".$id."/all/de.xml";
 		$raw = $this->curlDownload($url);
 		$xml = new \SimpleXMLElement($raw);
 		$rawEpisodes = $xml->Episode;

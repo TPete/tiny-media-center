@@ -3,56 +3,20 @@
 namespace API;
 
 //Wrapper for themoviedb.org API
-class TMDBWrapper{
+class TMDBWrapper extends DBAPIWrapper{
 	
-	private $apiKey;
-	private $baseUrl = "http://api.themoviedb.org/3/";
 	private $movieDir;
 	private $moviePics;
 	private $config;
 	
 	
 	public function __construct($movieDir, $moviePics, $apiKey){
+		$defaults = array("api_key" => $apiKey, "language" => "de");
+		parent::__construct("http://api.themoviedb.org/3/", $defaults);
 		$this->movieDir = $movieDir;
 		$this->moviePics = $moviePics;
-		$this->apiKey = $apiKey;
 	}
-	
-	private function curlDownload($url, $args = array()){
-		$url = $this->baseUrl.$url."?api_key=".$this->apiKey."&language=de";
-		foreach($args as $argName => $argVal){
-			$url .= "&".$argName."=".urlencode($argVal);
-		}
 		
-		if (!function_exists('curl_init')){
-			die('Sorry cURL is not installed!');
-		}
-		$ch = curl_init($url);
-		curl_setopt($ch, CURLOPT_HEADER, FALSE);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array("Accept: application/json"));
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-		$output = curl_exec($ch);
-		curl_close($ch);
-		
-		return $output;
-	}
-	
-	private function downloadImage($url, $file){
-		$ch = curl_init($url);
-		curl_setopt($ch, CURLOPT_HEADER, 0);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_BINARYTRANSFER,1);
-		$raw = curl_exec($ch);
-		curl_close ($ch);
-		if(file_exists($file)){
-			unlink($file);
-		}
-		$fp = fopen($file,'x');
-		fwrite($fp, $raw);
-		fclose($fp);
-	}
-	
 	private function fetchConfiguration(){
 		$url = "configuration";
 		$tmp = $this->curlDownload($url);
@@ -135,7 +99,6 @@ class TMDBWrapper{
 			$id = $data["results"][0]["id"];
 			$result = $this->getMovieInfo($id, $this->movieDir, $filename);
 		}
-		
 		
 		return $result;
 	}
