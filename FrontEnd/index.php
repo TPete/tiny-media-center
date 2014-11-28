@@ -138,7 +138,7 @@ $app->get('/',
 			$pageTitle = "Main Index";
 			$header = "TV";
 			$app->render("pageHeader.php", array("pageTitle" => $header." Index", "host" => $host));
-			$app->render("headerBarMovies.php", array("header" => $header));
+			$app->render("headerBarMain.php", array("header" => $header, "host" => $host));
 			$categories = $api->getCategories();
 			$app->render("categorySelection.php", array("categories" => $categories));
 			$app->render("pageFooter.php", array("host" => $host));
@@ -148,7 +148,7 @@ $app->get('/install',
 		function() use($app, $host, $api){
 			$header = "Install";
 			$app->render("pageHeader.php", array("pageTitle" => $header." Index", "host" => $host));
-			$app->render("headerBarMovies.php", array("header" => $header));
+			$app->render("headerBarMovies.php", array("header" => $header, "target" => $host));
 			$file = "config.json";
 			$knowsAPI = true;
 			if (!file_exists($file)){
