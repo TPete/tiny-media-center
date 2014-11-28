@@ -5,6 +5,7 @@ require "classes/getID3/getid3/getid3.php";
 require "classes/api/Util.php";
 require "classes/api/Store.php";
 require "classes/api/Controller.php";
+require "classes/api/DBAPIWrapper.php";
 require "classes/api/TTVDBWrapper.php";
 require "classes/api/ShowController.php";
 require "classes/api/ShowStoreDB.php";

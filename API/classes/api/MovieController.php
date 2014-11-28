@@ -4,12 +4,14 @@ namespace API;
 class MovieController extends Controller{
 	
 	private $picturePath;
+	private $pictureAlias;
 	
 	public function __construct($path, $alias, $dbConfig, $apiKey){
 		$scraper = new TMDBWrapper($path, $this->picturePath, $apiKey);
-		$store = new MovieStoreDB($dbConfig, $alias, $alias."pictures/");
+		$store = new MovieStoreDB($dbConfig);
 		parent::__construct($path, $alias, $store, $scraper);
 		$this->picturePath = $path."pictures/";
+		$this->pictureAlias = $alias."pictures/";
 	}
 	
 	public function getCategories(){
@@ -17,6 +19,14 @@ class MovieController extends Controller{
 		$categories = array("movies/" => "Filme");
 		
 		return $categories;
+	}
+	
+	private function addPosterEntry($movies){
+		foreach($movies as &$movie){//call by reference
+			$movie["poster"] = $this->pictureAlias.$movie["movie_db_id"]."_333x500.jpg";
+		}
+		
+		return $movies;
 	}
 	
 	/**
@@ -33,7 +43,10 @@ class MovieController extends Controller{
 	 * 
 	 */
 	public function getMovies($sort, $order, $filter, $genre, $cnt, $offset){
-		return $this->store->getMovies($sort, $order, $filter, $genre, $cnt, $offset);
+		$movieData = $this->store->getMovies($sort, $order, $filter, $genre, $cnt, $offset);
+		$movieData["list"] = $this->addPosterEntry($movieData["list"]);
+		
+		return $movieData;
 	}
 	
 	/**
@@ -48,7 +61,10 @@ class MovieController extends Controller{
 	 *
 	 */
 	public function getMoviesForCollection($collectionID, $cnt, $offset){
-		return $this->store->getMoviesForCollection($collectionID, $cnt, $offset);
+		$movieData = $this->store->getMoviesForCollection($collectionID, $cnt, $offset);
+		$movieData["list"] = $this->addPosterEntry($movieData["list"]);
+		
+		return $movieData;
 	}
 	
 	/**
@@ -63,7 +79,10 @@ class MovieController extends Controller{
 	 *
 	 */
 	public function getMoviesForList($listId, $cnt, $offset){
-		return $this->store->getMoviesForList($listId, $cnt, $offset);
+		$movieData = $this->store->getMoviesForList($listId, $cnt, $offset);
+		$movieData["list"] = $this->addPosterEntry($movieData["list"]);
+		
+		return $movieData;
 	}
 	
 	/**
@@ -78,6 +97,8 @@ class MovieController extends Controller{
 		if (isset($movie["error"])){
 			return $movie;
 		}
+		$movie["filename"] = $this->alias.$movie["filename"];
+		$movie["poster"] = $this->pictureAlias.$movie["movie_db_id"]."_333x500.jpg";
 		$actors = explode(",", $movie["actors"]);
 		$movie["actors"] = array_slice($actors, 0, 4);
 		$movie["countries"] = explode(",", $movie["countries"]);
