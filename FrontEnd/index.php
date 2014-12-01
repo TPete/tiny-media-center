@@ -133,7 +133,16 @@ function renderException($exp, $host, $app){
 	$app->render("pageFooter.php", array("host" => $host));
 }
 
-$app->get('/',
+$checkAPI = function($api, $host){
+	return function() use ($api, $host){
+		if (!$api->isValid()){
+			$app = \Slim\Slim::getInstance();
+			$app->redirect('http://'.$host.'/install');
+		}
+	};
+};
+
+$app->get('/', $checkAPI($api, $host), 
 		function () use($app, $host, $api){
 			$pageTitle = "Main Index";
 			$header = "TV";
@@ -226,7 +235,7 @@ $app->post('/install/db',
 			$app->redirect("http://".$host."/install");
 		});
 
-$app->group('/shows', function() use ($app, $host, $api) {
+$app->group('/shows', $checkAPI($api, $host), function() use ($app, $host, $api) {
 
 	$app->get('/:category/edit/:id',
 			function($category, $id) use ($app, $api){
@@ -296,7 +305,7 @@ $app->group('/shows', function() use ($app, $host, $api) {
 	
 });
 
-$app->group('/movies', function() use ($app, $host, $api) {
+$app->group('/movies', $checkAPI($api, $host), function() use ($app, $host, $api) {
 
 	$app->get('/', 
 		function() use ($app, $host, $api){
