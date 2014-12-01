@@ -91,6 +91,9 @@ class RestAPI{
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
 		curl_setopt($ch, CURLOPT_TIMEOUT, 10);
 		$output = curl_exec($ch);
+		if ($output === false){
+			return false;
+		}
 		$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		curl_close($ch);
 		
