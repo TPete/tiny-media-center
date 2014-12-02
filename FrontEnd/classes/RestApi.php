@@ -52,7 +52,7 @@ class RestAPI{
 		return $response;
 	}
 	
-	private function curlPost($url, $args = ""){
+	private function curlPost($url, $args = "", $timeout = 10){
 		if (!function_exists('curl_init')){
 			die('Sorry cURL is not installed!');
 		}
@@ -65,7 +65,7 @@ class RestAPI{
 		curl_setopt($ch, CURLOPT_POST, TRUE);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $args);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+		curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
 		$output = curl_exec($ch);
 		curl_close($ch);
 		
@@ -174,6 +174,13 @@ class RestAPI{
 	
 		return $result;
 	}
+	
+	public function updateShows(){
+		$url = "/shows/maintenance";
+		$result = $this->curlPost($url, "", 720);
+		
+		return $result;
+	}
 
 //MOVIES
 	
@@ -224,5 +231,12 @@ class RestAPI{
 		$res = $this->curlDownload($url);
 	
 		return $res;
+	}
+	
+	public function updateMovies(){
+		$url = "/movies/maintenance";
+		$result = $this->curlPost($url, "", 720);
+	
+		return $result;
 	}
 }
