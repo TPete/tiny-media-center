@@ -7,11 +7,11 @@ class MovieController extends Controller{
 	private $pictureAlias;
 	
 	public function __construct($path, $alias, $dbConfig, $apiKey){
+		$this->picturePath = $path."pictures/";
+		$this->pictureAlias = $alias."pictures/";
 		$scraper = new TMDBWrapper($path, $this->picturePath, $apiKey);
 		$store = new MovieStoreDB($dbConfig);
 		parent::__construct($path, $alias, $store, $scraper);
-		$this->picturePath = $path."pictures/";
-		$this->pictureAlias = $alias."pictures/";
 	}
 	
 	public function getCategories(){
