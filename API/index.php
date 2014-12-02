@@ -170,7 +170,7 @@ $app->group('/shows', function() use ($app, $config, $db){
 	$ShowController = new API\ShowController($config["pathShows"], $config["aliasShows"], 
 						$db, $config["TTVDBApiKey"]);
 	
-	$app->get('/maintenance/',
+	$app->post('/maintenance/',
 			function() use ($ShowController){
 				try{
 					$ShowController->updateData();
@@ -297,7 +297,7 @@ $app->group('/movies', function() use ($app, $config, $db){
 				}
 			});
 	
-	$app->get('/maintenance',
+	$app->post('/maintenance',
 			function() use ($MovieController){
 				try{
 					$MovieController->updateData();
