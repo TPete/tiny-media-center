@@ -300,7 +300,8 @@ $app->group('/movies', function() use ($app, $config, $db){
 	$app->post('/maintenance',
 			function() use ($MovieController){
 				try{
-					$MovieController->updateData();
+					$result = $MovieController->updateData();
+					echo json_encode($result);
 				}
 				catch(Exception $e){
 					handleException($e);

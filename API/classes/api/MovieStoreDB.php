@@ -357,11 +357,14 @@ class MovieStoreDB extends Store{
 		$sql = "Delete From movies
 				Where ID = :id";
 		$stmt = $db->prepare($sql);
+		$protocol = "";
 		foreach($list as $toRemove){
-			echo "Removing ".$toRemove["FILENAME"]."<br>";
+			$protocol .= "Removing ".$toRemove["FILENAME"]."<br>";
 			$stmt->bindValue(":id", $toRemove["ID"], \PDO::PARAM_INT);
 			$stmt->execute();
 		}
+		
+		return $protocol;
 	}
 	
 	public function checkExisting($dir){

@@ -131,7 +131,7 @@ class MovieController extends Controller{
 			$this->scraper->downloadPoster($movie->getId(), $movie->getPosterPath());
 			$this->store->updateMovie($movie->toArray(), $this->path);
 
-			return "OK:".$movie;
+			return "OK:".$movie->__toString();
 		}
 		else{
 			return "No Match";
@@ -151,58 +151,60 @@ class MovieController extends Controller{
 	}
 	
 	public function updateData(){
-		echo "<h1>Maintenance</h1>";
-		echo "<h2>Duplicate movie files</h2>";
+		$protocol = "<h1>Maintenance</h1>";
+		$protocol .= "<h2>Duplicate movie files</h2>";
 		$res = $this->checkDuplicateFiles($this->path);
 		foreach($res as $movie){
-			echo $movie."<br>";
+			$protocol .= $movie."<br>";
 		}
 				
 		$res = $this->store->checkExisting($this->path);
 		
-		echo "<h2>Missing movie entries (new movies)</h2>";
+		$protocol .= "<h2>Missing movie entries (new movies)</h2>";
 		foreach($res["missing"] as $filename){
 			$title = $this->getMovieTitle($filename);
-			echo $title." (File: ".$filename.")<br>";
-			echo $this->searchMovie($title, $filename);
-			echo "<br>";
+			$protocol .= $title." (File: ".$filename.")<br>";
+			$protocol .= $this->searchMovie($title, $filename);
+			$protocol .= "<br>";
 		}
 		
-		echo "<h2>DB duplicates</h2>";
+		$protocol .= "<h2>DB duplicates</h2>";
 		//TODO: handle duplicates
 		foreach($res["duplicates"] as $dupe){
-			var_dump($dupe);
+			$protocol .= $dupe;
 		}
 		
-		echo "<h2>Obsolete movie entries</h2>";
-		$this->store->checkRemovedFiles($this->path);
+		$protocol .= "<h2>Obsolete movie entries</h2>";
+		$protocol .=$this->store->checkRemovedFiles($this->path);
 		
-		echo "<h2>Missing collection entries</h2>";
+		$protocol .= "<h2>Missing collection entries</h2>";
 		$res = $this->store->checkCollections();
 		foreach($res["missing"] as $miss){
 			$col = $this->updateCollectionFromScraper($miss);
-			var_dump($col);
-			echo "<br>";
+			$protocol .= $col;
+			$protocol .= "<br>";
 		}
 		
-		echo "<h2>Obsolete collection entries</h2>";
+		$protocol .= "<h2>Obsolete collection entries</h2>";
 		foreach($res["obsolete"] as $obs){
-			echo $obs;
-			echo $this->removeObsoleteCollection($obs);
-			echo "<br>";
+			$protocol .= $obs;
+			$protocol .= $this->removeObsoleteCollection($obs);
+			$protocol .= "<br>";
 		}
 		
-		echo "<h2>Fetching missing Movie Pics</h2>";
+		$protocol .= "<h2>Fetching missing Movie Pics</h2>";
 		$res = $this->store->getMissingPics($this->picturePath);
 		foreach($res["missing"] as $miss){
-			echo "fetching ".$miss["MOVIE_DB_ID"]."<br>";
+			$protocol .= "fetching ".$miss["MOVIE_DB_ID"]."<br>";
 			$this->downloadMoviePic($miss["MOVIE_DB_ID"]);
 		}
-		echo "<h2>Remove obsolete Movie Pics</h2>";
-		$this->removeObsoletePics($res["all"], $this->picturePath);
+		$protocol .= "<h2>Remove obsolete Movie Pics</h2>";
+		$protocol .= $this->removeObsoletePics($res["all"], $this->picturePath);
 		
-		echo "<h2>Resizing images</h2>";
+		$protocol .= "<h2>Resizing images</h2>";
 		$this->resizeMoviePics($this->picturePath);
+		
+		return array("result" => "Ok", "protocol" => $protocol);
 	}
 	
 	private function downloadMoviePic($id){
@@ -216,6 +218,7 @@ class MovieController extends Controller{
 	
 	private function resizeMoviePics($picsDir){
 		$images = Util::glob_recursive($picsDir."*big.jpg");
+		$protocol = "";
 		foreach($images as $image){
 			$id = substr($image, strrpos($image, "/") + 1);
 			$id = substr($id, 0, strpos($id, "_"));
@@ -226,14 +229,17 @@ class MovieController extends Controller{
 			if (file_exists($target)){
 				continue;
 			}
-			echo $dest." - ".$target."<br>";
+			$protocol .= $dest." - ".$target."<br>";
 			Util::resizeImage($dest, $target, 333, 500);
 		}
+		
+		return $protocol;
 	}
 	
 	private function removeObsoletePics($movieDBIDS, $picsDir){
 		$files = glob($picsDir."*_big.jpg");
-			
+		
+		$protocol = "";
 		foreach($files as $file){
 			$id = substr($file, strlen($picsDir));
 			$id = substr($id, 0, strpos($id, "_"));
@@ -241,7 +247,7 @@ class MovieController extends Controller{
 				continue;
 			}
 			else{
-				echo "removing ".$id."<br>";
+				$protocol .= "removing ".$id."<br>";
 				unlink($file);
 				$small = $picsDir.$id."_333x500.jpg";
 				if (file_exists($small)){
@@ -249,6 +255,8 @@ class MovieController extends Controller{
 				}
 			}
 		}
+		
+		return $protocol;
 	}
 	
 	private function checkDuplicateFiles($dir){
@@ -289,7 +297,11 @@ class MovieController extends Controller{
 			$this->store->updateCollectionById($collectionData, $collectionId);
 		}
 		
-		return $collectionData;
+		$collectionStr = "[Id: ".$collectionData["id"];
+		$collectionStr .= ", Name: ".$collectionData["name"];
+		$collectionStr .= ", Overview: ".$collectionData["overview"]."]";
+		
+		return $collectionStr;
 	}
 	
 	private function removeObsoleteCollection($collectionId){
