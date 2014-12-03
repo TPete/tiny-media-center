@@ -250,7 +250,7 @@ $app->group('/shows', $checkAPI($api, $host), function() use ($app, $host, $api)
 			});
 	
 	$app->get('/:category/edit/:id',
-			function($category, $id) use ($app, $api){
+			function($category, $id) use ($app, $api, $host){
 				try{
 					$details = $api->getShowDetails($category, $id);
 					$app->render("showEdit.php", array("category" => $category, "id" => $id, 
