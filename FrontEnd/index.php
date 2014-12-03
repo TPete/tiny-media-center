@@ -3,6 +3,8 @@ require 'lib/Slim/Slim.php';
 require 'classes/RestApi.php';
 require 'classes/RemoteException.php';
 
+set_time_limit(900);
+
 \Slim\Slim::registerAutoloader();
 
 $app = new \Slim\Slim(array(

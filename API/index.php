@@ -16,6 +16,8 @@ require "classes/api/ScrapeException.php";
 require "lib/getID3/getid3/getid3.php";
 require "lib/Slim/Slim.php";
 
+set_time_limit(900);
+
 \Slim\Slim::registerAutoloader();
 
 $app = new \Slim\Slim(array(
