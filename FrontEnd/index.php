@@ -237,6 +237,18 @@ $app->post('/install/db',
 
 $app->group('/shows', $checkAPI($api, $host), function() use ($app, $host, $api) {
 
+	$app->post('/update', 
+			function() use($app, $host, $api){
+				try{
+					$res = $api->updateShows();
+					
+					echo $res["protocol"];
+				}
+				catch(RemoteException $exp){
+					renderException($exp, $host, $app);
+				}
+			});
+	
 	$app->get('/:category/edit/:id',
 			function($category, $id) use ($app, $api){
 				try{
@@ -301,8 +313,7 @@ $app->group('/shows', $checkAPI($api, $host), function() use ($app, $host, $api)
 					renderException($exp, $host, $app);
 				}
 			});
-	
-	
+
 });
 
 $app->group('/movies', $checkAPI($api, $host), function() use ($app, $host, $api) {
@@ -361,6 +372,18 @@ $app->group('/movies', $checkAPI($api, $host), function() use ($app, $host, $api
 				renderException($exp, $host, $app);
 			}
 		});
+	
+	$app->post('/update',
+			function() use($app, $host, $api){
+				try{
+					$res = $api->updateMovies();
+					
+					echo $res["protocol"];
+				}
+				catch(RemoteException $exp){
+					renderException($exp, $host, $app);
+				}
+			});
 	
 	$app->get('/search/',
 			function() use ($app, $api){
