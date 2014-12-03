@@ -1,6 +1,30 @@
 var main, sections = {}, host = $('#host').val();
 
-
+sections["main"] = (function(){
+	"use strict";
+	var init;
+	
+	init = function(){
+		$('#setup-menu')
+		.hide();
+		$('#setup-box-link')
+		.off('click')
+		.on('click', function(){
+			if ($('#setup-menu').is(':visible')){
+				$('#setup-menu').hide();
+				$('#setup-box-link').removeClass('header-buttons-active');
+			}
+			else{
+				$('#setup-menu').show();
+				$('#setup-box-link').addClass('header-buttons-active');
+			}
+		});
+	};
+	
+	return {
+		init: init
+	};
+}());
 
 sections["shows"] = (function(){
 	"use strict";
@@ -517,7 +541,10 @@ sections.init = (function(){
 	var init;
 		
 	init = function(){
-		var cat = sections.getCategory();		
+		var cat = sections.getCategory();
+		if (cat.length === 0){
+			cat = 'main';
+		}
 		if (cat !== null){
 			console.log("init " + cat);
 			sections[cat].init();

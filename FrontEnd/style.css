@@ -662,7 +662,8 @@ a.movie-info, a.collection-info{
 	float: right;
 	text-align: right;
 }
-.header-buttons-left>a:HOVER, .header-buttons-right>a:HOVER, .header-buttons-right>a.header-buttons-active{
+.header-buttons-left>a:HOVER, .header-buttons-right>a:HOVER, .header-buttons-right>a.header-buttons-active,
+#setup-menu>li>a:HOVER, #setup-menu>li>form>button:HOVER{
 	background-color:  #3380CC;
 	color: #333333;
 }
@@ -741,4 +742,40 @@ a.movie-info, a.collection-info{
 	left: 500px;
 	color: #333333;
 	padding: 10px;
+}
+
+#setup-menu{
+	width: 150px;
+	position: absolute;
+	top: 50px;
+	right: 0;
+	background-color:  #333333;
+	color: #3380CC;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	text-align: left;
+}
+
+#setup-menu > li{
+	padding: 3px 0;
+}
+
+#setup-menu > li > a{
+	padding: 5px 5px 5px 8px;
+}
+
+#setup-menu > li >form > button{
+	padding: 5px;
+}
+
+#setup-menu > li > a, #setup-menu > li > form > button{
+	text-decoration: none;
+	background-color:  #333333;
+	color: #3380CC;
+	font-size: 0.7em;
+	border: none;
+	font-weight: bold;
+	cursor: pointer;
+	font-family: Verdana, Arial;
 }
