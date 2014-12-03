@@ -95,43 +95,53 @@ class ShowController extends Controller{
 	}
 	
 	public function updateData(){
+		$protocol = "";
 		$folders = Util::getFolders($this->path);
 		foreach($folders as $folder){
-			$this->maintenance($folder);
+			$protocol .= $this->maintenance($folder);
 		}
+		
+		return array("result" => "Ok", "protocol" => $protocol);
 	}
 	
 	private function maintenance($category){
-		echo "<h2>Maintenance ".$category."</h2>";
-		echo "<h3>Check missing show entries (new shows)</h3>";
-		$this->addMissingShows($category);
+		$protocol = "";
+		$protocol .= "<h2>Maintenance ".$category."</h2>";
+		$protocol .= "<h3>Check missing show entries (new shows)</h3>";
+		$protocol .= $this->addMissingShows($category);
 		
-		echo "<h3>Check obsolete show entries (removed shows)</h3>";
-		$this->removeObsoleteShows($category);
+		$protocol .= "<h3>Check obsolete show entries (removed shows)</h3>";
+		$protocol .= $this->removeObsoleteShows($category);
 		
-		echo "<h3>Update episodes</h3>";
-		$this->updateEpisodes($category);
+		$protocol .= "<h3>Update episodes</h3>";
+		$protocol .= $this->updateEpisodes($category);
 		
-		echo "<h3>Update thumbnails</h3>";
+		$protocol .= "<h3>Update thumbnails</h3>";
 		$this->updateThumbs($category);
+		
+		return $protocol;
 	}
 	
 	private function addMissingShows($category){
+		$protocol = "";
 		$folders = Util::getFolders($this->path.$category."/");
 		foreach($folders as $folder){
-			$this->store->createIfMissing($category, $folder);
+			$protocol .= $this->store->createIfMissing($category, $folder);
 		}
+		
+		return $protocol;
 	}
 	
 	private function removeObsoleteShows($category){
 		$folders = Util::getFolders($this->path.$category."/");
-		$this->store->removeIfObsolete($category, $folders);
+		return $this->store->removeIfObsolete($category, $folders);
 	}
 	
 	private function updateEpisodes($category){
+		$protocol = "";
 		$shows = $this->store->getShows($category);
 		foreach($shows as $show){
-			echo "Updating ".$show["title"]." ... ";
+			$protocol .= "Updating ".$show["title"]." ... ";
 			if ($show["tvdb_id"] === null){
 				$search = urlencode($show["title"]);
 				$id = $this->scraper->getSeriesId($search);
@@ -142,30 +152,35 @@ class ShowController extends Controller{
 			else{
 				$id = $show["tvdb_id"];
 			}
-			echo "Scraping ... ";
+			$protocol .= "Scraping ... ";
 			$seasons = $this->scraper->getSeriesInfoById($id);
 			if (count($seasons) > 0){
 				$this->store->updateEpisodes($show["id"], $seasons);
-				echo "Done";
+				$protocol .= "Done";
 			}
 			else{
-				echo "Scraping failed (check ID)";
+				$protocol .= "Scraping failed (check ID)";
 			}
 			
-			echo "<br>";
+			$protocol .= "<br>";
 		}
+		
+		return $protocol;
 	}
 	
 	private function updateThumbs($category){
+		$protocol = "";
 		$folders = Util::getFolders($this->path.$category."/");
 		foreach($folders as $folder){
 			$path = $this->path.$category."/".$folder."/";
-			echo $path;
+			$protocol .= $path;
 			$dim = 200;
 			Util::resizeImage($path."bg.jpg", $path."thumb_".$dim.".jpg", $dim, $dim);
-			echo "done";
-			echo "<br>";
+			$protocol .= "done";
+			$protocol .= "<br>";
 		}
+		
+		return $protocol;
 	}
 		
 	private function getFileLink($seasonNo, $episodeNo, $files, $baseDir){

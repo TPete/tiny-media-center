@@ -106,11 +106,13 @@ class ShowStoreDB extends Store{
 			$stmt->bindValue(":folder", $folder, \PDO::PARAM_STR);
 			$stmt->bindValue(":title", $title, \PDO::PARAM_STR);
 			$stmt->execute();
-			echo "Added ".$folder."<br>";
+			return "Added ".$folder."<br>";
 		}
+		return "";
 	}
 	
 	public function removeIfObsolete($category, $folders){
+		$protocol = "";
 		$db = $this->connect();
 		$sql = "Select folder
 				From shows
@@ -128,9 +130,11 @@ class ShowStoreDB extends Store{
 			if (!in_array($row["folder"], $folders)){
 				$stmtShows->bindValue(":folder", $row["folder"], \PDO::PARAM_STR);
 				$stmtShows->execute();
-				echo "Removed ".$row["folder"]."<br>";
+				$protocol .= "Removed ".$row["folder"]."<br>";
 			}
 		}
+		
+		return $protocol;
 	}
 	
 	public function updateEpisodes($showId, $seasons){

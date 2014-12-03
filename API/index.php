@@ -173,7 +173,8 @@ $app->group('/shows', function() use ($app, $config, $db){
 	$app->post('/maintenance/',
 			function() use ($ShowController){
 				try{
-					$ShowController->updateData();
+					$result = $ShowController->updateData();
+					echo json_encode($result);
 				}
 				catch(Exception $e){
 					handleException($e);
