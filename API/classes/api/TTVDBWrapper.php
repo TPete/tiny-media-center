@@ -17,9 +17,12 @@ class TTVDBWrapper extends DBAPIWrapper{
 		$url = "GetSeries.php?language=de&seriesname=".$name;
 		$raw = $this->curlDownload($url);
 		$xml = new \SimpleXMLElement($raw);
-		$id = $xml->Series[0]->id;
-		
-		return (string)$id;
+		if (!empty($xml->Series[0])){
+			$id = $xml->Series[0]->id;
+			
+			return (string)$id;
+		}
+		throw new ScrapeException("Failed to retrieve series id");
 	}
 	
 	public function getSeriesInfoById($id){

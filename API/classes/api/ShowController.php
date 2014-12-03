@@ -141,24 +141,29 @@ class ShowController extends Controller{
 		$protocol = "";
 		$shows = $this->store->getShows($category);
 		foreach($shows as $show){
-			$protocol .= "Updating ".$show["title"]." ... ";
-			if ($show["tvdb_id"] === null){
-				$search = urlencode($show["title"]);
-				$id = $this->scraper->getSeriesId($search);
-				$path = $this->path.$category."/".$show["folder"]."/bg.jpg";
-				$this->scraper->downloadBG($id, $path);
-				$this->store->updateDetails($category, $show["folder"], $show["title"], $id);
+			try{
+				$protocol .= "Updating ".$show["title"]." ... ";
+				if ($show["tvdb_id"] === null){
+					$search = urlencode($show["title"]);
+					$id = $this->scraper->getSeriesId($search);
+					$path = $this->path.$category."/".$show["folder"]."/bg.jpg";
+					$this->scraper->downloadBG($id, $path);
+					$this->store->updateDetails($category, $show["folder"], $show["title"], $id);
+				}
+				else{
+					$id = $show["tvdb_id"];
+				}
+				$protocol .= "Scraping ... ";
+				$seasons = $this->scraper->getSeriesInfoById($id);
+				if (count($seasons) > 0){
+					$this->store->updateEpisodes($show["id"], $seasons);
+					$protocol .= "Done";
+				}
+				else{
+					$protocol .= "Scraping failed (check ID)";
+				}
 			}
-			else{
-				$id = $show["tvdb_id"];
-			}
-			$protocol .= "Scraping ... ";
-			$seasons = $this->scraper->getSeriesInfoById($id);
-			if (count($seasons) > 0){
-				$this->store->updateEpisodes($show["id"], $seasons);
-				$protocol .= "Done";
-			}
-			else{
+			catch(ScrapeException $e){
 				$protocol .= "Scraping failed (check ID)";
 			}
 			
