@@ -779,3 +779,8 @@ a.movie-info, a.collection-info{
 	cursor: pointer;
 	font-family: Verdana, Arial;
 }
+
+#setup-box-link{
+	font-size: 1.4em;
+	padding: 2px 10px 7px;
+}

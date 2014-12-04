@@ -1,7 +1,7 @@
 <div class="series-title">
 	<div class="header-caption"><?php echo $header;?></div>
 	<div class="header-buttons-right">
-		<a href="javascript:void(0)" id="setup-box-link">Setup</a>
+		<a href="javascript:void(0)" id="setup-box-link">&#9776;</a>
 		<br class="clear">
 	</div>
 	<br class="clear">
