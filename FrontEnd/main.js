@@ -36,9 +36,8 @@ sections["shows"] = (function(){
 		.on('click', function(){
 			var category = sections.getSubCategory(),
 				id = sections.getId();
-			console.log('/tv/' + category + '/edit/' + id);
 			$.ajax({
-				url: '/tv/shows/' + category + '/edit/' + id,
+				url: 'http://' + host + '/shows/' + category + '/edit/' + id,
 				success: function(data){
 					if ($('#show-edit-box').length > 0){
 						$('#show-edit-box').remove();
@@ -70,7 +69,7 @@ sections["shows"] = (function(){
 				$(this).prepend("<a id='episode-play-link' href='" + link + "' target='_blank' title='Play'>&#9654;</a>");
 			}
 			$.ajax({
-				url: '/tv/shows/' + category + '/episodes/' + id,
+				url: 'http://' + host + '/shows/' + category + '/episodes/' + id,
 				success: function(data){
 					$('#episode-details').html(data);
 				},
@@ -112,9 +111,9 @@ sections["movies"] = (function(){
 	var init;
 		
 	function showDetailsDialog(dbid, movieDBID, filename, type){
-		var url = '/tv/movies/';
+		var url = 'http://' + host + '/movies/';
 		if (type === 'lookup'){
-			url = '/tv/movies/lookup/';
+			url = 'http://' + host + '/movies/lookup/';
 		}
 		$.ajax({
 			url: url + dbid,
@@ -134,7 +133,7 @@ sections["movies"] = (function(){
 						{text: "Speichern",
 						 click : function(){
 							$.ajax({
-								url: '/tv/movies/' + dbid, 
+								url: 'http://' + host + '/movies/' + dbid, 
 								type: 'POST',
 								context: this,
 								data: {filename: filename,
@@ -220,8 +219,8 @@ sections["movies"] = (function(){
 	
 	function updateMovieOverview(query, pushHistory){
 		var loader = '<div id="loader-movie-overview">',
-			ajaxUrl = '/tv/movies/',
-			pushUrl = '/tv/movies/';
+			ajaxUrl = 'http://' + host + '/movies/',
+			pushUrl = 'http://' + host + '/movies/';
 		if (query.length > 0){
 			ajaxUrl += '?' + query + '&display=overview';
 			pushUrl += '?' + query;
@@ -266,7 +265,7 @@ sections["movies"] = (function(){
 			$('#nm-movie-details-wrapper').html('<div id="loader-movie-details"></div>');
 			var id = $(this).data('id');
 			$.ajax({
-				url: '/tv/movies/' + id,
+				url: 'http://' + host + '/movies/' + id,
 				success: function(data){
 					$('#nm-movie-details-wrapper').html(data);
 					addEditLinkHandler();
@@ -290,7 +289,7 @@ sections["movies"] = (function(){
 		.off('click')
 		.on('click', function(){
 			$.ajax({
-				url: '/tv/movies/search/',
+				url: 'http://' + host + '/movies/search/',
 				success: function(data){
 					var filter = $('#hidden-filter').val(),
 						genres = $('#hidden-genres').val(),
@@ -313,7 +312,7 @@ sections["movies"] = (function(){
 						showAutocompleteOnFocus: true,
 						allowSpaces: true,
 						autocomplete: {
-							source: '/tv/movies/genres/'
+							source: 'http://' + host + '/movies/genres/'
 						}
 					});
 					
@@ -368,7 +367,7 @@ sections['install'] = (function(){
 				data = {};
 			data[id] = $(obj).val();
 			$.ajax({
-				url: 'install/check/restUrl',
+				url: 'http://' + host + '/install/check/restUrl',
 				data: data,
 				success: function(data){
 					if (data === 'Ok'){
@@ -393,7 +392,7 @@ sections['install'] = (function(){
 			$('#db-box').remove();
 			if (restUrl.length > 0 && dbHost.length > 0 && dbName.length > 0 && dbUser.length > 0 && dbPassword.length > 0){
 				$.ajax({
-					url: 'install/check/db',
+					url: 'http://' + host + '/install/check/db',
 					data: {
 						dbHost: dbHost,
 						dbName: dbName,
@@ -438,7 +437,7 @@ sections['install'] = (function(){
 				aliasMovies = $('#aliasMovies').val();
 			if (restUrl.length > 0 && pathMovies.length > 0 && aliasMovies.length > 0){
 				$.ajax({
-					url: 'install/check/movies',
+					url: 'http://' + host + '/install/check/movies',
 					data: {
 						pathMovies: pathMovies,
 						aliasMovies: aliasMovies,
@@ -468,7 +467,7 @@ sections['install'] = (function(){
 			$('#shows-box').remove();
 			if (restUrl.length > 0 && pathShows.length > 0 && aliasShows.length > 0){
 				$.ajax({
-					url: 'install/check/shows',
+					url: 'http://' + host + '/install/check/shows',
 					data: {
 						pathShows: pathShows,
 						aliasShows: aliasShows,
