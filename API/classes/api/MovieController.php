@@ -8,6 +8,12 @@ class MovieController extends Controller{
 	
 	public function __construct($path, $alias, $dbConfig, $apiKey){
 		$this->picturePath = $path."pictures/";
+		if (!file_exists($this->picturePath)){
+			$res = mkdir($this->picturePath);
+			if (!$res){
+				throw new \Exception("Failed to create directory for movie pictures");
+			}
+		}
 		$this->pictureAlias = $alias."pictures/";
 		$scraper = new TMDBWrapper($path, $this->picturePath, $apiKey);
 		$store = new MovieStoreDB($dbConfig);
@@ -196,13 +202,13 @@ class MovieController extends Controller{
 		$res = $this->store->getMissingPics($this->picturePath);
 		foreach($res["missing"] as $miss){
 			$protocol .= "fetching ".$miss["MOVIE_DB_ID"]."<br>";
-			$this->downloadMoviePic($miss["MOVIE_DB_ID"]);
+			$protocol .= $this->downloadMoviePic($miss["MOVIE_DB_ID"]);
 		}
-		$protocol .= "<h2>Remove obsolete Movie Pics</h2>";
-		$protocol .= $this->removeObsoletePics($res["all"], $this->picturePath);
+// 		$protocol .= "<h2>Remove obsolete Movie Pics</h2>";
+// 		$protocol .= $this->removeObsoletePics($res["all"], $this->picturePath);
 		
-		$protocol .= "<h2>Resizing images</h2>";
-		$this->resizeMoviePics($this->picturePath);
+// 		$protocol .= "<h2>Resizing images</h2>";
+// 		$this->resizeMoviePics($this->picturePath);
 		
 		return array("result" => "Ok", "protocol" => $protocol);
 	}
