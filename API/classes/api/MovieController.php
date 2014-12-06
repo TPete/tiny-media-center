@@ -204,11 +204,11 @@ class MovieController extends Controller{
 			$protocol .= "fetching ".$miss["MOVIE_DB_ID"]."<br>";
 			$protocol .= $this->downloadMoviePic($miss["MOVIE_DB_ID"]);
 		}
-// 		$protocol .= "<h2>Remove obsolete Movie Pics</h2>";
-// 		$protocol .= $this->removeObsoletePics($res["all"], $this->picturePath);
+		$protocol .= "<h2>Remove obsolete Movie Pics</h2>";
+		$protocol .= $this->removeObsoletePics($res["all"], $this->picturePath);
 		
-// 		$protocol .= "<h2>Resizing images</h2>";
-// 		$this->resizeMoviePics($this->picturePath);
+		$protocol .= "<h2>Resizing images</h2>";
+		$this->resizeMoviePics($this->picturePath);
 		
 		return array("result" => "Ok", "protocol" => $protocol);
 	}
