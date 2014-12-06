@@ -66,11 +66,15 @@ label.config > input{
 }
 
 .category-overview{
-	float: left;
+	clear: both;
 }
 
 .category-selection-wrapper{
 	text-align: center;
+}
+
+.category-overview-wrapper{
+	text-align: left;
 }
 
 .category-selection{
@@ -82,14 +86,14 @@ label.config > input{
 .sub-category{
 	position: relative;
 	float: left;
-	display: inline-block;
-	margin-bottom: -4px;
+	width: 200px;
+	height: 112px;
 }
 
 .sub-category>span{
 	display: none;
 	position: absolute;
-	bottom: 5px;
+	bottom: 0;
 	left: 0;
 	white-space: nowrap;
 	text-overflow: ellipsis;
@@ -343,7 +347,7 @@ label.config > input{
 		min-height: 360px;
 		max-height: 360px;
 	}
-	.thumbnail{
+	.sub-category{
 		width: 190px;
 	}
 	#nm-movie-details-wrapper{
