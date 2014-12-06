@@ -40,8 +40,8 @@ function initGET($var, $default = "", $toInt = false){
 	return $res;
 }
 
-function handleException($exception){
-	$error = array("error" => $exception->getMessage(), "trace" => $exception->getTrace());
+function handleException(Exception $exception){
+	$error = array("error" => $exception->getMessage(), "trace" => "");
 	echo json_encode($error);
 };
 
@@ -88,7 +88,8 @@ $app->get('/config/check/:type',
 				echo json_encode($res);
 			}
 			if ($type === "movies"){
-				if (is_dir($_GET["pathMovies"]) and API\Util::checkUrl($_GET["aliasMovies"])){
+				if (is_dir($_GET["pathMovies"]) and is_writable($_GET["pathMovies"]) 
+					and API\Util::checkUrl($_GET["aliasMovies"])){
 					$res["result"] = "Ok";
 				}
 				else{
@@ -97,7 +98,8 @@ $app->get('/config/check/:type',
 				echo json_encode($res);
 			}
 			if ($type === "shows"){
-				if (is_dir($_GET["pathShows"]) and API\Util::checkUrl($_GET["aliasShows"])){
+				if (is_dir($_GET["pathShows"]) and is_writable($_GET["pathShows"]) 
+					and API\Util::checkUrl($_GET["aliasShows"])){
 					$res["result"] = "Ok";
 					$folders = API\Util::getFolders($_GET["pathShows"]);
 					$res["folders"] = $folders;
