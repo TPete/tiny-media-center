@@ -120,9 +120,11 @@ class MovieController extends Controller{
 			$this->downloadMoviePic($movie->getId(), $movie);
 			$this->store->updateMovieById($movie->toArray(), $dbid, $this->path);
 			$this->resizeMoviePics($this->picturePath);
+			
+			return "OK:".$movie->__toString();
 		}
 		
-		return $movie;
+		return "Error";
 	}
 		
 	public function lookupMovie($id){
@@ -140,7 +142,7 @@ class MovieController extends Controller{
 			return "OK:".$movie->__toString();
 		}
 		else{
-			return "No Match";
+			return "Error";
 		}
 	}
 	

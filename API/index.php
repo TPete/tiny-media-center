@@ -344,14 +344,9 @@ $app->group('/movies', function() use ($app, $config, $db){
 			function($id) use ($MovieController) {
 				try{
 					$id = intval($id, 10);
-					$movie = $MovieController->updateFromScraper($id, $_POST["movieDBID"], $_POST["filename"]);
-		
-					if ($movie !== null){
-						echo "OK:".$movie;
-					}
-					else{
-						echo "Error";
-					}
+					$res = $MovieController->updateFromScraper($id, $_POST["movieDBID"], $_POST["filename"]);
+					
+					return $res;
 				}
 				catch(Exception $e){
 					handleException($e);
