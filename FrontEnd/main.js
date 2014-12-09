@@ -5,8 +5,7 @@ sections["main"] = (function(){
 	var init;
 	
 	init = function(){
-		$('#setup-menu')
-		.hide();
+		$('#setup-menu').hide();
 		$('#setup-box-link')
 		.off('click')
 		.on('click', function(){
@@ -17,7 +16,14 @@ sections["main"] = (function(){
 			else{
 				$('#setup-menu').show();
 				$('#setup-box-link').addClass('header-buttons-active');
+				$(document)
+				.on('click.hide-menu', function(){
+					$('#setup-menu').hide();
+					$('#setup-box-link').removeClass('header-buttons-active');
+					$(document).off('click.hide-menu');
+				});
 			}
+			return false;
 		});
 	};
 	
