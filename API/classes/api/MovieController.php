@@ -117,7 +117,7 @@ class MovieController extends Controller{
 	public function updateFromScraper($dbid, $movieDBID, $filename){
 		$movie = $this->scraper->getMovieInfo($movieDBID, $this->path, $filename);
 		if ($movie !== null){
-			$this->scraper->downloadPoster($movie->getId(), $movie->getPosterPath());
+			$this->downloadMoviePic($movie->getId(), $movie);
 			$this->store->updateMovieById($movie->toArray(), $dbid, $this->path);
 			$this->resizeMoviePics($this->picturePath);
 		}
@@ -134,7 +134,7 @@ class MovieController extends Controller{
 	private function searchMovie($title, $filename){
 		$movie = $this->scraper->searchMovie($title, $filename);
 		if ($movie !== null){
-			$this->scraper->downloadPoster($movie->getId(), $movie->getPosterPath());
+			$this->downloadMoviePic($movie->getId(), $movie);
 			$this->store->updateMovie($movie->toArray(), $this->path);
 
 			return "OK:".$movie->__toString();
@@ -213,10 +213,12 @@ class MovieController extends Controller{
 		return array("result" => "Ok", "protocol" => $protocol);
 	}
 	
-	private function downloadMoviePic($id){
-		$movie = $this->scraper->getMovieInfo($id);
+	private function downloadMoviePic($id, $movie = ""){
+		if ($movie === ""){
+			$movie = $this->scraper->getMovieInfo($id);
+		}
 		if ($movie !== null){
-			$this->scraper->downloadPoster($movie->getId(), $movie->getPosterPath());
+			$this->scraper->downloadPoster($id, $movie->getPosterPath(), $this->picturePath);
 			return "OK";
 		}
 		return "No Match";

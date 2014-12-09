@@ -6,7 +6,6 @@ namespace API;
 class TMDBWrapper extends DBAPIWrapper{
 	
 	private $movieDir;
-	private $moviePics;
 	private $config;
 	
 	
@@ -14,7 +13,6 @@ class TMDBWrapper extends DBAPIWrapper{
 		$defaults = array("api_key" => $apiKey, "language" => "de");
 		parent::__construct("http://api.themoviedb.org/3/", $defaults);
 		$this->movieDir = $movieDir;
-		$this->moviePics = $moviePics;
 	}
 		
 	private function fetchConfiguration(){
@@ -23,10 +21,10 @@ class TMDBWrapper extends DBAPIWrapper{
 		$this->config = json_decode($tmp, true);
 	}
 	
-	public function downloadPoster($id, $path){
+	public function downloadPoster($id, $path, $storeDir){
 		$this->fetchConfiguration();
 		$url = $this->config["images"]["base_url"]."original".$path;
-		$this->downloadImage($url, $this->moviePics.$id."_big.jpg");
+		$this->downloadImage($url, $storeDir.$id."_big.jpg");
 	}
 		
 	public function getCollectionInfo($id){
