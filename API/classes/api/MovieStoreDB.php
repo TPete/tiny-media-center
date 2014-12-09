@@ -215,16 +215,21 @@ class MovieStoreDB extends Store{
 		return $row;
 	}
 			
-	public function updateMovie($movie, $dir){
-		$sql = "Select ID
-				From movies
-				Where FILENAME = :filename";
-		$db = $this->connect();
-		$stmt = $db->prepare($sql);
-		$stmt->bindValue(":filename", $movie["filename"], \PDO::PARAM_STR);
-		$stmt->execute();
-		$row = $stmt->fetch(\PDO::FETCH_ASSOC);
-		if ($row === false){
+	public function updateMovie($movie, $dir, $id = ""){
+		if ($id === ""){
+			$sql = "Select ID
+					From movies
+					Where FILENAME = :filename";
+			$db = $this->connect();
+			$stmt = $db->prepare($sql);
+			$stmt->bindValue(":filename", $movie["filename"], \PDO::PARAM_STR);
+			$stmt->execute();
+			$row = $stmt->fetch(\PDO::FETCH_ASSOC);
+			if ($row !== false){
+				$id = $row["ID"];
+			}
+		}
+		if ($id === ""){
 			$sql = "Insert into movies(MOVIE_DB_ID, TITLE, FILENAME, OVERVIEW, RELEASE_DATE, GENRES, 
 					COUNTRIES, ACTORS, DIRECTOR, INFO, ORIGINAL_TITLE, COLLECTION_ID, ADDED_DATE, TITLE_SORT)
 					Values (:movieDBId, :title, :filename, :overview, :releaseDate, :genres, 
@@ -236,7 +241,7 @@ class MovieStoreDB extends Store{
 					RELEASE_DATE = :releaseDate, GENRES = :genres, COUNTRIES = :countries, ACTORS = :actors,  
 					DIRECTOR = :director, INFO = :info, ORIGINAL_TITLE = :originalTitle, COLLECTION_ID = :collectionId, 
 					ADDED_DATE = :addedDate, TITLE_SORT = :titleSort
-					Where ID = ".$row["ID"];
+					Where ID = ".$id;
 		}
 		$actors = array_slice($movie["actors"], 0, 10);
 		$filename = $dir.$movie["filename"];
@@ -259,37 +264,7 @@ class MovieStoreDB extends Store{
 		$stmt->bindValue(":titleSort", $titleSort, \PDO::PARAM_STR);
 		$stmt->execute();
 	}
-	
-	public function updateMovieById($movie, $id, $dir){
-		$db = $this->connect();
-		$sql = "Update movies
-				set MOVIE_DB_ID = :movieDBId, TITLE = :title, FILENAME = :filename, OVERVIEW = :overview, 
-				RELEASE_DATE = :releaseDate, GENRES = :genres, COUNTRIES = :countries, ACTORS = :actors,  
-				DIRECTOR = :director, INFO = :info, ORIGINAL_TITLE = :originalTitle, COLLECTION_ID = :collectionId, 
-				ADDED_DATE = :addedDate, TITLE_SORT = :titleSort
-				Where ID = ".$id;
-		$actors = array_slice($movie["actors"], 0, 10);
-		$filename = $dir.$movie["filename"];
-		$added = date("Y-m-d", filemtime($filename));
-		$titleSort = $movie["title"];
-		$stmt = $db->prepare($sql);
-		$stmt->bindValue(":movieDBId", $movie["id"], \PDO::PARAM_INT);
-		$stmt->bindValue(":title", $movie["title"], \PDO::PARAM_STR);
-		$stmt->bindValue(":filename", $movie["filename"], \PDO::PARAM_STR);
-		$stmt->bindValue(":overview", $movie["overview"], \PDO::PARAM_STR);
-		$stmt->bindValue(":releaseDate", $movie["release_date"], \PDO::PARAM_STR);
-		$stmt->bindValue(":genres", implode(",", $movie["genres"]), \PDO::PARAM_STR);
-		$stmt->bindValue(":countries", implode(",", $movie["countries"]), \PDO::PARAM_STR);
-		$stmt->bindValue(":actors", implode(",", $actors), \PDO::PARAM_STR);
-		$stmt->bindValue(":director", $movie["director"], \PDO::PARAM_STR);
-		$stmt->bindValue(":info", $movie["info"], \PDO::PARAM_STR);
-		$stmt->bindValue(":originalTitle", $movie["original_title"], \PDO::PARAM_STR);
-		$stmt->bindValue(":collectionId", $movie["collection_id"], \PDO::PARAM_INT);
-		$stmt->bindValue(":addedDate", $added, \PDO::PARAM_STR);
-		$stmt->bindValue(":titleSort", $titleSort, \PDO::PARAM_STR);
-		$stmt->execute();
-	}
-	
+		
 	public function updateCollectionById($collection, $id){
 		$db = $this->connect();
 		$sql = "Select ID, MOVIE_DB_ID

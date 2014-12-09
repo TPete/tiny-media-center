@@ -114,36 +114,35 @@ class MovieController extends Controller{
 		return $movie;
 	}
 	
-	public function updateFromScraper($dbid, $movieDBID, $filename){
-		$movie = $this->scraper->getMovieInfo($movieDBID, $this->path, $filename);
+	private function updateMovie($movie, $localId = ""){
 		if ($movie !== null){
 			$this->downloadMoviePic($movie->getId(), $movie);
-			$this->store->updateMovieById($movie->toArray(), $dbid, $this->path);
+			$this->store->updateMovie($movie->toArray(), $this->path, $localId);
 			$this->resizeMoviePics($this->picturePath);
-			
-			return "OK:".$movie->__toString();
-		}
-		
-		return "Error";
-	}
-		
-	public function lookupMovie($id){
-		$movie = $this->scraper->getMovieInfo($id);
-		
-		return $movie->toArray();
-	}
-		
-	private function searchMovie($title, $filename){
-		$movie = $this->scraper->searchMovie($title, $filename);
-		if ($movie !== null){
-			$this->downloadMoviePic($movie->getId(), $movie);
-			$this->store->updateMovie($movie->toArray(), $this->path);
-
+	
 			return "OK:".$movie->__toString();
 		}
 		else{
 			return "Error";
 		}
+	}
+	
+	public function updateFromScraper($localId, $movieDBID, $filename){
+		$movie = $this->scraper->getMovieInfo($movieDBID, $this->path, $filename);
+		
+		return $this->updateMovie($movie, $localId);
+	}
+		
+	private function searchMovie($title, $filename){
+		$movie = $this->scraper->searchMovie($title, $filename);
+		
+		return $this->updateMovie($movie);
+	}
+	
+	public function lookupMovie($id){
+		$movie = $this->scraper->getMovieInfo($id);
+	
+		return $movie->toArray();
 	}
 	
 	public function getGenres(){
