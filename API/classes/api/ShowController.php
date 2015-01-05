@@ -2,30 +2,71 @@
 namespace API;
 
 class ShowController extends Controller{
-		
+
+	const DEFAULT_CATEGORY = "Serien";
+	
+	private $useDefault;
+	private $categoryNames;
+	
 	public function __construct($path, $alias, $dbConfig, $apiKey){
 		$store = new ShowStoreDB($dbConfig);
 		$scraper = new TTVDBWrapper($apiKey);
 		parent::__construct($path, $alias, $store, $scraper);
+		$this->categoryNames = $this->getCategoryNames();
+	}
+	
+	private function getCategoryNames(){
+		/*
+		 * shows_root
+		* 	|_ folders (A)
+		*      |_ sub  (B)
+		* Each show has to be placed in its own folder. These folders can be
+		* placed at level (A) or (B) below the shows_root. If they are on level (A)
+		* all shows will be available via a single menu entry (a category -
+		* which will be named default in the database).
+		* Shows can be placed on level (B) to put them into several categories
+		* (the level (A) folders). The setup is auto detected below.
+		*/
+		$folders = Util::getFolders("/media/tiny_serien_test/");
+		$sub = Util::getFolders("/media/tiny_serien_test/".$folders[0]."/");
+		$this->useDefault = true;
+		if (count($sub) > 0){
+			$files = glob("/media/tiny_serien_test/".$folders[0]."/".$sub[0]."/*.avi");
+			if (count($files) > 0){
+				$this->useDefault = false;
+			}
+		}
+		if ($this->useDefault){
+			$categories = array(ShowController::DEFAULT_CATEGORY);
+		}
+		else{
+			$categories = array();
+			foreach($folders as $folder){
+				$categories[] = $folder;
+			}
+		}
+		
+		return $categories;
 	}
 	
 	public function getCategories(){
-		$folders = Util::getFolders($this->path);
-		$shows = array();
-		foreach($folders as $folder){
-			$shows["shows/".strtolower($folder)."/"] = $folder;
+		$categories = array();
+		$names = $this->categoryNames;
+		foreach($names as $name){
+			$categories["shows/".$name."/"] = $name; 
 		}
 		
-		return $shows;
+		return $categories;
 	}
 	
 	public function getList($category){
 		$overview = $this->store->getShows($category);
 		$result = array();
+		$path = $this->getCategoryAlias($category);
 		foreach($overview as $show){
 			$result[] = array("folder" => $show["folder"], "title" => $show["title"],
 					"tvdb_id" => $show["tvdb_id"],  
-					"thumbUrl" => $this->alias.$category."/".$show["folder"]."/thumb_200.jpg");
+					"thumbUrl" => $path.$show["folder"]."/thumb_200.jpg");
 		}
 		
 		return $result;
@@ -34,7 +75,8 @@ class ShowController extends Controller{
 	public function getDetails($category, $id){
 		$episodesData = $this->store->getEpisodes($category, $id);
 		$showDetails = $this->store->getShowDetails($category, $id);
-		$base = $this->path.$category."/".$id."/";
+		$base = $this->getCategoryPath($category);
+		$base .= $id."/";
 		$files = glob($base."*.avi");
 		
 		$episodesArray = array();
@@ -80,8 +122,9 @@ class ShowController extends Controller{
 			$showData[] = array("title" => $lastSeason, "episodes" => $seasonData);;
 		}
 		
+		$path = $this->getCategoryAlias($category);
 		$result = array("title" => $showDetails["title"], "seasons" => $showData,
-				"tvdbId" => $showDetails["tvdb_id"], "imageUrl" => $this->alias.$category."/".$id."/bg.jpg");
+				"tvdbId" => $showDetails["tvdb_id"], "imageUrl" => $path.$id."/bg.jpg");
 		
 		return $result;
 	}
@@ -94,11 +137,36 @@ class ShowController extends Controller{
 		return $this->store->updateDetails($category, $id, $title, $tvdbId);
 	}
 	
+	private function getCategory($base, $category){
+		$path = $base;
+		if (!$this->useDefault){
+			$path .= $category."/";
+		}
+		
+		return $path;
+	}
+	
+	private function getCategoryPath($category){
+		return $this->getCategory($this->path, $category);
+	}
+	
+	private function getCategoryAlias($category){
+		return $this->getCategory($this->alias, $category);
+	}
+	
+	private function getFolders($category){
+		$path = $this->getCategoryPath($category);
+		$folders = Util::getFolders($path);
+		
+		return $folders;
+	}
+	
 	public function updateData(){
 		$protocol = "";
-		$folders = Util::getFolders($this->path);
-		foreach($folders as $folder){
-			$protocol .= $this->maintenance($folder);
+		$categories = $this->categoryNames;
+		
+		foreach($categories as $category){
+			$protocol .= $this->maintenance($category);
 		}
 		
 		return array("result" => "Ok", "protocol" => $protocol);
@@ -124,7 +192,7 @@ class ShowController extends Controller{
 	
 	private function addMissingShows($category){
 		$protocol = "";
-		$folders = Util::getFolders($this->path.$category."/");
+		$folders = $this->getFolders($category);
 		foreach($folders as $folder){
 			$protocol .= $this->store->createIfMissing($category, $folder);
 		}
@@ -133,7 +201,7 @@ class ShowController extends Controller{
 	}
 	
 	private function removeObsoleteShows($category){
-		$folders = Util::getFolders($this->path.$category."/");
+		$folders = $this->getFolders($category);
 		return $this->store->removeIfObsolete($category, $folders);
 	}
 	
@@ -143,10 +211,12 @@ class ShowController extends Controller{
 		foreach($shows as $show){
 			try{
 				$protocol .= "Updating ".$show["title"]." ... ";
-				if ($show["tvdb_id"] === null){
+				//TODO: check if bg image exists before downloading from web api
+				if ($show["tvdb_id"] === null){					
 					$search = urlencode($show["title"]);
 					$id = $this->scraper->getSeriesId($search);
-					$path = $this->path.$category."/".$show["folder"]."/bg.jpg";
+					$path = $this->getCategoryPath($category);
+					$path .= $show["folder"]."/bg.jpg";
 					$this->scraper->downloadBG($id, $path);
 					$this->store->updateDetails($category, $show["folder"], $show["title"], $id);
 				}
@@ -175,9 +245,10 @@ class ShowController extends Controller{
 	
 	private function updateThumbs($category){
 		$protocol = "";
-		$folders = Util::getFolders($this->path.$category."/");
+		$folders = $this->getFolders($category);
+		$basePath = $this->getCategoryPath($category);
 		foreach($folders as $folder){
-			$path = $this->path.$category."/".$folder."/";
+			$path = $basePath.$folder."/";
 			$protocol .= $path;
 			$dim = 200;
 			Util::resizeImage($path."bg.jpg", $path."thumb_".$dim.".jpg", $dim, $dim);
