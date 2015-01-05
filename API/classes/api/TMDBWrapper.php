@@ -5,14 +5,12 @@ namespace API;
 //Wrapper for themoviedb.org API
 class TMDBWrapper extends DBAPIWrapper{
 	
-	private $movieDir;
 	private $config;
 	
 	
-	public function __construct($movieDir, $moviePics, $apiKey){
+	public function __construct($apiKey){
 		$defaults = array("api_key" => $apiKey, "language" => "de");
 		parent::__construct("http://api.themoviedb.org/3/", $defaults);
-		$this->movieDir = $movieDir;
 	}
 		
 	private function fetchConfiguration(){
@@ -84,9 +82,10 @@ class TMDBWrapper extends DBAPIWrapper{
 	 * 
 	 * @param String $title the title to search for
 	 * @param String $filename the name of the movie file
+	 * @param String $path path to the file
 	 * @return Ambigous <NULL, \API\Movie>
 	 */
-	public function searchMovie($title, $filename){
+	public function searchMovie($title, $filename, $path){
 		$url = "search/movie";
 		$args = array("query" => $title);
 		
@@ -95,7 +94,7 @@ class TMDBWrapper extends DBAPIWrapper{
 		$result = null;
 		if (isset($data["results"][0])){
 			$id = $data["results"][0]["id"];
-			$result = $this->getMovieInfo($id, $this->movieDir, $filename);
+			$result = $this->getMovieInfo($id, $path, $filename);
 		}
 		
 		return $result;
