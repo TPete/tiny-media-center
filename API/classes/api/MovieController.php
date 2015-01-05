@@ -228,22 +228,16 @@ class MovieController extends Controller{
 			$protocol .= $movie."<br>";
 		}
 				
-		$res = $this->store->checkExisting($category, $path);
+		$missing = $this->store->checkExisting($category, $path);
 		
 		$protocol .= "<h2>Missing movie entries (new movies)</h2>";
-		foreach($res["missing"] as $filename){
+		foreach($missing as $filename){
 			$title = $this->getMovieTitle($filename);
 			$protocol .= $title." (File: ".$filename.")<br>";
 			$protocol .= $this->searchMovie($category, $title, $filename);
 			$protocol .= "<br>";
 		}
-		
-		$protocol .= "<h2>DB duplicates</h2>";
-		//TODO: handle duplicates? Make Filename unique in db!
-		foreach($res["duplicates"] as $dupe){
-			$protocol .= $dupe;
-		}
-		
+				
 		$protocol .= "<h2>Obsolete movie entries</h2>";
 		$protocol .= $this->store->checkRemovedFiles($category, $path);
 		

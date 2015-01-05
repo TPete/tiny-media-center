@@ -376,7 +376,6 @@ class MovieStoreDB extends Store{
 		$stmt = $db->prepare($sql);
 		$files = glob($dir."*.avi");
 		$missing = array();
-		$duplicates = array();
 		foreach($files as $file){
 			$filename = substr($file, strrpos($file, "/") + 1);
 			$stmt->bindValue(":filename", $filename, \PDO::PARAM_STR);
@@ -387,11 +386,8 @@ class MovieStoreDB extends Store{
 			if ($cnt === 0){
 				$missing[] = $filename;
 			}
-			if ($cnt === 2){
-				$duplicates[] = $filename;
-			}
 		}
-		return array("missing" => $missing, "duplicates" => $duplicates);
+		return $missing;
 	}
 	
 	public function checkCollections($category){
