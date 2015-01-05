@@ -8,7 +8,7 @@ class MovieStoreDB extends Store{
 		parent::__construct($config, $tables);
 	}
 	
-	public function getMovies($sort, $order, $filter, $genres, $cnt, $offset){
+	public function getMovies($category, $sort, $order, $filter, $genres, $cnt, $offset){
 		$db = $this->connect();
 		$sqlCols = "Select mov.id, mov.movie_db_id, mov.title, mov.filename, mov.overview, mov.release_date, mov.genres,
 						mov.countries, mov.actors, mov.director, mov.info, mov.original_title, 
@@ -16,7 +16,7 @@ class MovieStoreDB extends Store{
 		$sqlCnt = "Select count(*) Cnt";
 		$sql = "
 				From movies mov
-				Where 1 = 1 ";
+				Where mov.category = '".$category."' ";
 		
 		if (strlen($genres) > 0){
 			$whereGenres = "";
@@ -112,20 +112,22 @@ class MovieStoreDB extends Store{
 		}
 	}
 	
-	public function getMoviesForCollection($collectionId, $cnt, $offset){
+	public function getMoviesForCollection($category, $collectionId, $cnt, $offset){
 		$db = $this->connect();
 		$sqlCnt = "Select count(*) Cnt";
 		$sqlCols = "Select mov.id, mov.movie_db_id, mov.title, mov.filename, mov.overview, mov.release_date, mov.genres,
 						mov.countries, mov.actors, mov.director, mov.info, mov.original_title, mov.collection_id";
 		$sql = "
 				From collections col
-				Join collection_parts parts on col.MOVIE_DB_ID = parts.COLLECTION_ID
-				Join movies mov on parts.MOVIE_ID = mov.MOVIE_DB_ID
+				Join collection_parts parts on col.ID = parts.COLLECTION_ID
+				Join movies mov on parts.MOVIE_ID = mov.MOVIE_DB_ID and col.CATEGORY = mov.CATEGORY
 				Where col.MOVIE_DB_ID = :collectionId
+				  and mov.CATEGORY = :category 
 				Order By mov.RELEASE_DATE";
 		
 		$stmt = $db->prepare($sqlCnt.$sql);
 		$stmt->bindValue(":collectionId", $collectionId, \PDO::PARAM_INT);
+		$stmt->bindValue(":category", $category, \PDO::PARAM_STR);
 		$stmt->execute();
 		$row = $stmt->fetch(\PDO::FETCH_ASSOC);
 		$rowCount = $row["Cnt"];
@@ -138,6 +140,7 @@ class MovieStoreDB extends Store{
 			}
 			$stmt = $db->prepare($sql);
 			$stmt->bindValue(":collectionId", $collectionId, \PDO::PARAM_INT);
+			$stmt->bindValue(":category", $category, \PDO::PARAM_STR);
 			$stmt->execute();
 			$list = array();
 			while($row =$stmt->fetch(\PDO::FETCH_ASSOC)){
@@ -150,18 +153,21 @@ class MovieStoreDB extends Store{
 		}
 	}
 	
-	public function getMoviesForList($listId, $cnt, $offset){
+	public function getMoviesForList($category, $listId, $cnt, $offset){
 		$db = $this->connect();
 		$sqlCnt = "Select count(*) Cnt";
 		$sqlCols = "Select mov.id, mov.movie_db_id, mov.title, mov.filename, mov.overview, mov.release_date, mov.genres,
 							mov.countries, mov.actors, mov.director, mov.info, mov.original_title";
 		$sql = "
 				FROM list_parts lp
-				JOIN movies mov ON lp.MOVIE_ID = mov.MOVIE_DB_ID
+				JOIN lists li on lp.LIST_ID = li.ID
+				JOIN movies mov ON lp.MOVIE_ID = mov.MOVIE_DB_ID and li.CATEGORY = mov.CATEGORY
 				WHERE lp.LIST_ID = :listId
+				  and mov.CATEGORY = :category 
 				Order By mov.RELEASE_DATE";
 		$stmt = $db->prepare($sqlCnt.$sql);
 		$stmt->bindValue(":listId", $listId, \PDO::PARAM_INT);
+		$stmt->bindValue(":category", $category, \PDO::PARAM_STR);
 		$stmt->execute();
 		$row = $stmt->fetch(\PDO::FETCH_ASSOC);
 		$rowCount = $row["Cnt"];
@@ -174,6 +180,7 @@ class MovieStoreDB extends Store{
 			}
 			$stmt = $db->prepare($sql);
 			$stmt->bindValue(":listId", $listId, \PDO::PARAM_INT);
+			$stmt->bindValue(":category", $category, \PDO::PARAM_STR);
 			$stmt->execute();
 			$list = array();
 			while($row = $stmt->fetch(\PDO::FETCH_ASSOC)){
@@ -186,25 +193,27 @@ class MovieStoreDB extends Store{
 		}
 	}
 	
-	public function getMovieById($id){
+	public function getMovieById($category, $id){
 		$sql = "Select mov.id, mov.movie_db_id, mov.title, mov.filename, mov.overview, mov.release_date, mov.genres,
 						mov.countries, mov.actors, mov.director, mov.info, mov.original_title, 
 						mov.collection_id, ifnull(col.name, '') collection_name
 				From movies mov
 				Left Join collections col on mov.COLLECTION_ID = col.MOVIE_DB_ID
-				Where mov.id = :id";
+				Where mov.category = :category and mov.id = :id";
 		$sqlLists = "Select li.ID list_id, li.NAME list_name
 					From movies mov
 					Join list_parts lp on mov.MOVIE_DB_ID = lp.MOVIE_ID	
 					Join lists li on li.ID = lp.LIST_ID
-					Where mov.ID = :id";
+					Where mov.category = :category and mov.ID = :id";
 		$db = $this->connect();
 		$stmt = $db->prepare($sql);
+		$stmt->bindValue(":category", $category, \PDO::PARAM_STR);
 		$stmt->bindValue(":id", $id, \PDO::PARAM_INT);
 		$stmt->execute();
 		$row = $stmt->fetch(\PDO::FETCH_ASSOC);
 		
 		$stmt = $db->prepare($sqlLists);
+		$stmt->bindValue(":category", $category, \PDO::PARAM_STR);
 		$stmt->bindValue(":id", $id, \PDO::PARAM_INT);
 		$stmt->execute();
 		$row["lists"] = array();
@@ -215,14 +224,16 @@ class MovieStoreDB extends Store{
 		return $row;
 	}
 			
-	public function updateMovie($movie, $dir, $id = ""){
+	public function updateMovie($category, $movie, $dir, $id = ""){
+		$db = $this->connect();
 		if ($id === ""){
 			$sql = "Select ID
 					From movies
-					Where FILENAME = :filename";
-			$db = $this->connect();
+					Where FILENAME = :filename
+					and CATEGORY = :category";
 			$stmt = $db->prepare($sql);
 			$stmt->bindValue(":filename", $movie["filename"], \PDO::PARAM_STR);
+			$stmt->bindValue(":category", $category, \PDO::PARAM_STR);
 			$stmt->execute();
 			$row = $stmt->fetch(\PDO::FETCH_ASSOC);
 			if ($row !== false){
@@ -231,16 +242,16 @@ class MovieStoreDB extends Store{
 		}
 		if ($id === ""){
 			$sql = "Insert into movies(MOVIE_DB_ID, TITLE, FILENAME, OVERVIEW, RELEASE_DATE, GENRES, 
-					COUNTRIES, ACTORS, DIRECTOR, INFO, ORIGINAL_TITLE, COLLECTION_ID, ADDED_DATE, TITLE_SORT)
+					COUNTRIES, ACTORS, DIRECTOR, INFO, ORIGINAL_TITLE, COLLECTION_ID, ADDED_DATE, TITLE_SORT, CATEGORY)
 					Values (:movieDBId, :title, :filename, :overview, :releaseDate, :genres, 
-					:countries, :actors, :director, :info, :originalTitle, :collectionId, :addedDate, :titleSort)";
+					:countries, :actors, :director, :info, :originalTitle, :collectionId, :addedDate, :titleSort, :category)";
 		}
 		else{
 			$sql = "Update movies
 					set MOVIE_DB_ID = :movieDBId, TITLE = :title, FILENAME = :filename, OVERVIEW = :overview, 
 					RELEASE_DATE = :releaseDate, GENRES = :genres, COUNTRIES = :countries, ACTORS = :actors,  
 					DIRECTOR = :director, INFO = :info, ORIGINAL_TITLE = :originalTitle, COLLECTION_ID = :collectionId, 
-					ADDED_DATE = :addedDate, TITLE_SORT = :titleSort
+					ADDED_DATE = :addedDate, TITLE_SORT = :titleSort, CATEGORY = :category
 					Where ID = ".$id;
 		}
 		$actors = array_slice($movie["actors"], 0, 10);
@@ -262,22 +273,25 @@ class MovieStoreDB extends Store{
 		$stmt->bindValue(":collectionId", $movie["collection_id"], \PDO::PARAM_INT);
 		$stmt->bindValue(":addedDate", $added, \PDO::PARAM_STR);
 		$stmt->bindValue(":titleSort", $titleSort, \PDO::PARAM_STR);
+		$stmt->bindValue(":category", $category, \PDO::PARAM_STR);
 		$stmt->execute();
 	}
 		
-	public function updateCollectionById($collection, $id){
+	public function updateCollectionById($category, $collection, $id){
 		$db = $this->connect();
 		$sql = "Select ID, MOVIE_DB_ID
 				From collections
-				Where MOVIE_DB_ID = :id";
+				Where MOVIE_DB_ID = :id
+				  And CATEGORY = :category";
 		$db = $this->connect();
 		$stmt = $db->prepare($sql);
 		$stmt->bindValue(":id", $id, \PDO::PARAM_INT);
+		$stmt->bindValue(":category", $category, \PDO::PARAM_STR);
 		$stmt->execute();
 		$row = $stmt->fetch(\PDO::FETCH_ASSOC);
 		if ($row === false){
-			$sql = "Insert into collections(MOVIE_DB_ID, NAME, OVERVIEW)
-				Values (:movieDBId, :name, :overview)";
+			$sql = "Insert into collections(MOVIE_DB_ID, NAME, OVERVIEW, CATEGORY)
+				Values (:movieDBId, :name, :overview, :category)";
 		}
 		else{
 			$sqlOld = "Delete
@@ -287,21 +301,29 @@ class MovieStoreDB extends Store{
 			$sql = "Update collections
 					set MOVIE_DB_ID = :movieDBId,
 					NAME = :name,
-					OVERVIEW = :overview
+					OVERVIEW = :overview,
+					CATEGORY = :category
 					Where ID = ".$row["ID"];
 		}
 		$stmt = $db->prepare($sql);
 		$stmt->bindValue(":movieDBId", $collection["id"], \PDO::PARAM_INT);
 		$stmt->bindValue(":name", $collection["name"], \PDO::PARAM_STR);
 		$stmt->bindValue(":overview", $collection["overview"], \PDO::PARAM_STR);
+		$stmt->bindValue(":category", $category, \PDO::PARAM_STR);
 		$stmt->execute();
+		if ($row === false){
+			$id = $db->lastInsertId();
+		}
+		else{
+			$id = $row["ID"];
+		}
 		
 		$sqlParts = "Insert into collection_parts(COLLECTION_ID, MOVIE_ID)
 					Values (:collectionId, :movieId)";
 		$stmtParts = $db->prepare($sqlParts);
 		
 		foreach($collection["parts"] as $part){
-			$stmtParts->bindValue(":collectionId", $collection["id"], \PDO::PARAM_INT);
+			$stmtParts->bindValue(":collectionId", $id, \PDO::PARAM_INT);
 			$stmtParts->bindValue(":movieId", $part["id"], \PDO::PARAM_INT);
 			$stmtParts->execute();
 		}
@@ -317,12 +339,15 @@ class MovieStoreDB extends Store{
 		$stmt->execute();
 	}
 	
-	public function checkRemovedFiles($dir){
+	public function checkRemovedFiles($category, $dir){
 		$sql = "Select ID, MOVIE_DB_ID, FILENAME
 				From movies
+				Where CATEGORY = :category
 				Order by id";
 		$db = $this->connect();
-		$stmt = $db->query($sql);
+		$stmt = $db->prepare($sql);
+		$stmt->bindValue(":category", $category, \PDO::PARAM_STR);
+		$stmt->execute();
 		$list = array();
 		while($row = $stmt->fetch(\PDO::FETCH_ASSOC)){
 			if (!file_exists($dir.$row["FILENAME"])){
@@ -342,11 +367,12 @@ class MovieStoreDB extends Store{
 		return $protocol;
 	}
 	
-	public function checkExisting($dir){
+	public function checkExisting($category, $dir){
 		$db = $this->connect();
 		$sql = "Select count(*) cnt
 				From movies
-				Where FILENAME = :filename";
+				Where FILENAME = :filename
+				  and CATEGORY = :category";
 		$stmt = $db->prepare($sql);
 		$files = glob($dir."*.avi");
 		$missing = array();
@@ -354,6 +380,7 @@ class MovieStoreDB extends Store{
 		foreach($files as $file){
 			$filename = substr($file, strrpos($file, "/") + 1);
 			$stmt->bindValue(":filename", $filename, \PDO::PARAM_STR);
+			$stmt->bindValue(":category", $category, \PDO::PARAM_STR);
 			$stmt->execute();
 			$row = $stmt->fetch(\PDO::FETCH_ASSOC);
 			$cnt = intval($row["cnt"], 10);
@@ -367,14 +394,17 @@ class MovieStoreDB extends Store{
 		return array("missing" => $missing, "duplicates" => $duplicates);
 	}
 	
-	public function checkCollections(){
+	public function checkCollections($category){
 		$db = $this->connect();
 		$sql = "SELECT mov.collection_id id
 				FROM movies mov
-				LEFT JOIN collections col ON mov.collection_id = col.movie_db_id
+				LEFT JOIN collections col ON mov.collection_id = col.movie_db_id AND mov.CATEGORY = col.CATEGORY
 				WHERE mov.collection_id IS NOT NULL
-				AND col.name IS NULL ";
-		$stmt = $db->query($sql);
+				AND col.name IS NULL 
+				AND mov.CATEGORY = :category";
+		$stmt = $db->prepare($sql);
+		$stmt->bindValue(":category", $category, \PDO::PARAM_STR);
+		$stmt->execute();
 		$missing = array();
 		while($row = $stmt->fetch(\PDO::FETCH_ASSOC)){
 			$missing[] = $row["id"];
@@ -382,10 +412,13 @@ class MovieStoreDB extends Store{
 		
 		$sql = "SELECT col.id As id
 				FROM collections col 
-				LEFT JOIN movies mov ON mov.collection_id = col.movie_db_id
+				LEFT JOIN movies mov ON mov.collection_id = col.movie_db_id AND mov.CATEGORY = col.CATEGORY
 				WHERE col.id IS NOT NULL
-				AND mov.collection_id IS NULL ";
-		$stmt = $db->query($sql);
+				AND mov.collection_id IS NULL 
+				AND col.CATEGORY = :category";
+		$stmt = $db->prepare($sql);
+		$stmt->bindValue(":category", $category, \PDO::PARAM_STR);
+		$stmt->execute();
 		$obsolete = array();
 		while($row = $stmt->fetch(\PDO::FETCH_ASSOC)){
 			$obsolete[] = $row["id"];
@@ -393,17 +426,20 @@ class MovieStoreDB extends Store{
 		return array("missing" => $missing, "obsolete" => $obsolete);
 	}
 	
-	public function getMissingPics($picsDir){
+	public function getMissingPics($category, $dir){
 		$sql = "Select ID, MOVIE_DB_ID
 				From movies
+				Where CATEGORY = :category
 				Order by id";
 		$db = $this->connect();
-		$stmt = $db->query($sql);
+		$stmt = $db->prepare($sql);
+		$stmt->bindValue(":category", $category, \PDO::PARAM_STR);
+		$stmt->execute();
 		$movieDBIDS = array();
 		$missing = array();
 		while($row = $stmt->fetch(\PDO::FETCH_ASSOC)){
 			$movieDBIDS[] = $row["MOVIE_DB_ID"];
-			$big = $picsDir.$row["MOVIE_DB_ID"]."_big.jpg";
+			$big = $dir.$row["MOVIE_DB_ID"]."_big.jpg";
 			if (!file_exists($big)){
 				$missing[] = $row;
 			}
@@ -411,11 +447,14 @@ class MovieStoreDB extends Store{
 		return array("missing" => $missing, "all" => $movieDBIDS);
 	}
 		
-	public function getGenres(){
+	public function getGenres($category){
 		$sql = "Select genres
-				From movies";
+				From movies
+				Where category = :category";
 		$db = $this->connect();
-		$stmt = $db->query($sql);
+		$stmt = $db->prepare($sql);
+		$stmt->bindValue(":category", $category, \PDO::PARAM_STR);
+		$stmt->execute();
 		$genres = array();
 		while($row = $stmt->fetch(\PDO::FETCH_ASSOC)){
 			$tmp = explode(",", $row["genres"]);
@@ -431,23 +470,29 @@ class MovieStoreDB extends Store{
 		
 	}
 	
-	public function getLists(){
+	public function getLists($category){
 		$sql = "SELECT id, name
 				FROM lists
+				Where category = :category
 				ORDER BY name";
 		$db = $this->connect();
-		$stmt = $db->query($sql);
+		$stmt = $db->prepare($sql);
+		$stmt->bindValue(":category", $category, \PDO::PARAM_STR);
+		$stmt->execute();
 		$lists = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 		
 		return $lists;
 	}
 	
-	public function getCollections(){
+	public function getCollections($category){
 		$sql = "SELECT MOVIE_DB_ID id, name
 				FROM collections
+				Where category = :category
 				ORDER BY name";
 		$db = $this->connect();
-		$stmt = $db->query($sql);
+		$stmt = $db->prepare($sql);
+		$stmt->bindValue(":category", $category, \PDO::PARAM_STR);
+		$stmt->execute();
 		$collections = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 			
 		return $collections;

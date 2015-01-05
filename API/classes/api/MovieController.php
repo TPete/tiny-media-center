@@ -3,33 +3,58 @@ namespace API;
 
 class MovieController extends Controller{
 	
+	const DEFAULT_CATEGORY = "Filme";
 	private $picturePath;
 	private $pictureAlias;
 	
+	private $useDefault;
+	private $categoryNames;
+	
 	public function __construct($path, $alias, $dbConfig, $apiKey){
-		$this->picturePath = $path."pictures/";
-		if (!file_exists($this->picturePath)){
-			$res = mkdir($this->picturePath);
-			if (!$res){
-				throw new \Exception("Failed to create directory for movie pictures");
-			}
-		}
-		$this->pictureAlias = $alias."pictures/";
-		$scraper = new TMDBWrapper($path, $this->picturePath, $apiKey);
+// 		$this->picturePath = $path."pictures/";
+// 		if (!file_exists($this->picturePath)){
+// 			$res = mkdir($this->picturePath);
+// 			if (!$res){
+// 				throw new \Exception("Failed to create directory for movie pictures");
+// 			}
+// 		}
+// 		$this->pictureAlias = $alias."pictures/";
+		
+		$scraper = new TMDBWrapper($apiKey);
 		$store = new MovieStoreDB($dbConfig);
 		parent::__construct($path, $alias, $store, $scraper);
+		$this->categoryNames = $this->getCategoryNames();
+	}
+	
+	private function getCategoryNames(){
+		$folders = Util::getFolders($this->path, array("pictures"));
+		$categories = array(MovieController::DEFAULT_CATEGORY);
+		$this->useDefault = true;
+		if (count($folders) > 0){
+			$this->useDefault = false;
+			$categories = array();
+			foreach($folders as $folder){
+				$categories[] = $folder;
+			}
+		}
+	
+		return $categories;
 	}
 	
 	public function getCategories(){
-		//TODO: replace hard coded values
-		$categories = array("movies/" => "Filme");
+		$categories = array();
+		$names = $this->categoryNames;
+		foreach($names as $name){
+			$categories["movies/".$name."/"] = $name; 
+		}
 		
 		return $categories;
 	}
 	
-	private function addPosterEntry($movies){
+	private function addPosterEntry($category, $movies){
+		$alias = $this->getCategoryAlias($category);
 		foreach($movies as &$movie){//call by reference
-			$movie["poster"] = $this->pictureAlias.$movie["movie_db_id"]."_333x500.jpg";
+			$movie["poster"] = $alias."pictures/".$movie["movie_db_id"]."_333x500.jpg";
 		}
 		
 		return $movies;
@@ -38,6 +63,7 @@ class MovieController extends Controller{
 	/**
 	 * Get movies matching the given criteria.
 	 * 
+	 * @param category the category
 	 * @param sort the sort criteria (name|date|year)
 	 * @param order the sort order (asc|desc)
 	 * @param filter search terms
@@ -48,9 +74,9 @@ class MovieController extends Controller{
 	 * @return the movies (array of arrays)
 	 * 
 	 */
-	public function getMovies($sort, $order, $filter, $genre, $cnt, $offset){
-		$movieData = $this->store->getMovies($sort, $order, $filter, $genre, $cnt, $offset);
-		$movieData["list"] = $this->addPosterEntry($movieData["list"]);
+	public function getMovies($category, $sort, $order, $filter, $genre, $cnt, $offset){
+		$movieData = $this->store->getMovies($category, $sort, $order, $filter, $genre, $cnt, $offset);
+		$movieData["list"] = $this->addPosterEntry($category, $movieData["list"]);
 		
 		return $movieData;
 	}
@@ -66,9 +92,9 @@ class MovieController extends Controller{
 	 * @return the movies (array of arrays)
 	 *
 	 */
-	public function getMoviesForCollection($collectionID, $cnt, $offset){
-		$movieData = $this->store->getMoviesForCollection($collectionID, $cnt, $offset);
-		$movieData["list"] = $this->addPosterEntry($movieData["list"]);
+	public function getMoviesForCollection($category, $collectionID, $cnt, $offset){
+		$movieData = $this->store->getMoviesForCollection($category, $collectionID, $cnt, $offset);
+		$movieData["list"] = $this->addPosterEntry($category, $movieData["list"]);
 		
 		return $movieData;
 	}
@@ -84,9 +110,9 @@ class MovieController extends Controller{
 	 * @return the movies (array of arrays)
 	 *
 	 */
-	public function getMoviesForList($listId, $cnt, $offset){
-		$movieData = $this->store->getMoviesForList($listId, $cnt, $offset);
-		$movieData["list"] = $this->addPosterEntry($movieData["list"]);
+	public function getMoviesForList($category, $listId, $cnt, $offset){
+		$movieData = $this->store->getMoviesForList($category, $listId, $cnt, $offset);
+		$movieData["list"] = $this->addPosterEntry($category, $movieData["list"]);
 		
 		return $movieData;
 	}
@@ -98,12 +124,12 @@ class MovieController extends Controller{
 	 * 
 	 * @return the movie details, an error message if the movie was not found
 	 */
-	public function getMovieDetails($id){
-		$movie = $this->store->getMovieById($id);
+	public function getMovieDetails($categroy, $id){
+		$movie = $this->store->getMovieById($categroy, $id);
 		if (isset($movie["error"])){
 			return $movie;
 		}
-		$movie["filename"] = $this->alias.$movie["filename"];
+		$movie["filename"] = $this->getCategoryAlias($category).$movie["filename"];
 		$movie["poster"] = $this->pictureAlias.$movie["movie_db_id"]."_333x500.jpg";
 		$actors = explode(",", $movie["actors"]);
 		$movie["actors"] = array_slice($actors, 0, 4);
@@ -114,11 +140,36 @@ class MovieController extends Controller{
 		return $movie;
 	}
 	
-	private function updateMovie($movie, $localId = ""){
+	private function getCategory($base, $category){
+		$path = $base;
+		if (!$this->useDefault){
+			$path .= $category."/";
+		}
+	
+		return $path;
+	}
+	
+	private function getCategoryPath($category){
+		return $this->getCategory($this->path, $category);
+	}
+	
+	private function getCategoryAlias($category){
+		return $this->getCategory($this->alias, $category);
+	}
+	
+	private function getPicturePath($category){
+		$pp = $this->getCategoryPath($category);
+		$pp .= "pictures/";
+	
+		return $pp;
+	}
+	
+	private function updateMovie($category, $movie, $localId = ""){
 		if ($movie !== null){
-			$this->downloadMoviePic($movie->getId(), $movie);
-			$this->store->updateMovie($movie->toArray(), $this->path, $localId);
-			$this->resizeMoviePics($this->picturePath);
+			$picturePath = $this->getPicturePath($category);
+			$this->downloadMoviePic($picturePath, $movie->getId(), $movie);
+			$this->store->updateMovie($category, $movie->toArray(), $this->getCategoryPath($category), $localId);
+			$this->resizeMoviePics($picturePath);
 	
 			return "OK:".$movie->__toString();
 		}
@@ -127,16 +178,16 @@ class MovieController extends Controller{
 		}
 	}
 	
-	public function updateFromScraper($localId, $movieDBID, $filename){
-		$movie = $this->scraper->getMovieInfo($movieDBID, $this->path, $filename);
+	public function updateFromScraper($category, $localId, $movieDBID, $filename){
+		$movie = $this->scraper->getMovieInfo($movieDBID, $this->getCategoryPath($category), $filename);
 		
-		return $this->updateMovie($movie, $localId);
+		return $this->updateMovie($category, $movie, $localId);
 	}
 		
-	private function searchMovie($title, $filename){
-		$movie = $this->scraper->searchMovie($title, $filename);
+	private function searchMovie($category, $title, $filename){
+		$movie = $this->scraper->searchMovie($title, $filename, $this->getCategoryPath($category));
 		
-		return $this->updateMovie($movie);
+		return $this->updateMovie($category, $movie);
 	}
 	
 	public function lookupMovie($id){
@@ -145,49 +196,61 @@ class MovieController extends Controller{
 		return $movie->toArray();
 	}
 	
-	public function getGenres(){
-		return $this->store->getGenres();
+	public function getGenres($category){
+		return $this->store->getGenres($category);
 	}
 	
-	public function getLists(){
-		return $this->store->getLists();
+	public function getLists($category){
+		return $this->store->getLists($category);
 	}
 	
-	public function getCollections(){
-		return $this->store->getCollections();
+	public function getCollections($category){
+		return $this->store->getCollections($category);
 	}
 	
 	public function updateData(){
-		$protocol = "<h1>Maintenance</h1>";
+		$protocol = "";
+		$categories = $this->categoryNames;
+		foreach($categories as $category){
+			$protocol .= $this->maintenance($category);
+		}
+	
+		return array("result" => "Ok", "protocol" => $protocol);
+	}
+	
+	public function maintenance($category){
+		$protocol = "<h1>Maintenance ".$category."</h1>";
 		$protocol .= "<h2>Duplicate movie files</h2>";
-		$res = $this->checkDuplicateFiles($this->path);
+		$path = $this->getCategoryPath($category);
+		$pp = $this->getPicturePath($category);
+		$res = $this->checkDuplicateFiles($path);
 		foreach($res as $movie){
 			$protocol .= $movie."<br>";
 		}
 				
-		$res = $this->store->checkExisting($this->path);
+		$res = $this->store->checkExisting($category, $path);
 		
 		$protocol .= "<h2>Missing movie entries (new movies)</h2>";
 		foreach($res["missing"] as $filename){
 			$title = $this->getMovieTitle($filename);
 			$protocol .= $title." (File: ".$filename.")<br>";
-			$protocol .= $this->searchMovie($title, $filename);
+			$protocol .= $this->searchMovie($category, $title, $filename);
 			$protocol .= "<br>";
 		}
 		
 		$protocol .= "<h2>DB duplicates</h2>";
-		//TODO: handle duplicates
+		//TODO: handle duplicates? Make Filename unique in db!
 		foreach($res["duplicates"] as $dupe){
 			$protocol .= $dupe;
 		}
 		
 		$protocol .= "<h2>Obsolete movie entries</h2>";
-		$protocol .=$this->store->checkRemovedFiles($this->path);
+		$protocol .= $this->store->checkRemovedFiles($category, $path);
 		
 		$protocol .= "<h2>Missing collection entries</h2>";
-		$res = $this->store->checkCollections();
+		$res = $this->store->checkCollections($category);
 		foreach($res["missing"] as $miss){
-			$col = $this->updateCollectionFromScraper($miss);
+			$col = $this->updateCollectionFromScraper($category, $miss);
 			$protocol .= $col;
 			$protocol .= "<br>";
 		}
@@ -200,26 +263,26 @@ class MovieController extends Controller{
 		}
 		
 		$protocol .= "<h2>Fetching missing Movie Pics</h2>";
-		$res = $this->store->getMissingPics($this->picturePath);
+		$res = $this->store->getMissingPics($category, $pp);
 		foreach($res["missing"] as $miss){
 			$protocol .= "fetching ".$miss["MOVIE_DB_ID"]."<br>";
-			$protocol .= $this->downloadMoviePic($miss["MOVIE_DB_ID"]);
+			$protocol .= $this->downloadMoviePic($pp, $miss["MOVIE_DB_ID"]);
 		}
 		$protocol .= "<h2>Remove obsolete Movie Pics</h2>";
-		$protocol .= $this->removeObsoletePics($res["all"], $this->picturePath);
+		$protocol .= $this->removeObsoletePics($res["all"], $pp);
 		
 		$protocol .= "<h2>Resizing images</h2>";
-		$this->resizeMoviePics($this->picturePath);
+		$this->resizeMoviePics($pp);
 		
-		return array("result" => "Ok", "protocol" => $protocol);
+		return $protocol;
 	}
 	
-	private function downloadMoviePic($id, $movie = ""){
+	private function downloadMoviePic($picturePath, $id, $movie = ""){
 		if ($movie === ""){
 			$movie = $this->scraper->getMovieInfo($id);
 		}
 		if ($movie !== null){
-			$this->scraper->downloadPoster($id, $movie->getPosterPath(), $this->picturePath);
+			$this->scraper->downloadPoster($id, $movie->getPosterPath(), $picturePath);
 			return "OK";
 		}
 		return "No Match";
@@ -268,8 +331,8 @@ class MovieController extends Controller{
 		return $protocol;
 	}
 	
-	private function checkDuplicateFiles($dir){
-		$files = glob($dir."*.avi");
+	private function checkDuplicateFiles($path){
+		$files = glob($path."*.avi");
 		$titles = array();
 		foreach($files as $file){
 			$titles[] = $this->getMovieTitle($file);
@@ -300,10 +363,10 @@ class MovieController extends Controller{
 		return $file;
 	}
 	
-	private function updateCollectionFromScraper($collectionId){
+	private function updateCollectionFromScraper($category, $collectionId){
 		$collectionData = $this->scraper->getCollectionInfo($collectionId);
 		if ($collectionData !== null){
-			$this->store->updateCollectionById($collectionData, $collectionId);
+			$this->store->updateCollectionById($category, $collectionData, $collectionId);
 		}
 		
 		$collectionStr = "[Id: ".$collectionData["id"];

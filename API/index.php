@@ -41,7 +41,7 @@ function initGET($var, $default = "", $toInt = false){
 }
 
 function handleException(Exception $exception){
-	$error = array("error" => $exception->getMessage(), "trace" => "");
+	$error = array("error" => $exception->getMessage(), "trace" => $exception->getTrace());
 	echo json_encode($error);
 };
 
@@ -236,8 +236,8 @@ $app->group('/movies', function() use ($app, $config, $db){
 	$MovieController = new API\MovieController($config["pathMovies"], $config["aliasMovies"], 
 			$db, $config["TMDBApiKey"]);
 	
-	$app->get('/', 
-			function() use ($MovieController) {
+	$app->get('/:category/', 
+			function($category) use ($MovieController) {
 				try{
 					$orgSort = initGET("sort", "name_asc");
 					$split = explode("_", $orgSort);
@@ -251,13 +251,13 @@ $app->group('/movies', function() use ($app, $config, $db){
 					$list = initGET("list", 0, true);
 					
 					if ($collection > 0){
-						$movieList = $MovieController->getMoviesForCollection($collection, $cnt, $offset);
+						$movieList = $MovieController->getMoviesForCollection($category, $collection, $cnt, $offset);
 					}
 					if ($list > 0){
-						$movieList = $MovieController->getMoviesForList($list, $cnt, $offset);
+						$movieList = $MovieController->getMoviesForList($category, $list, $cnt, $offset);
 					}
 					if ($list === 0 and $collection === 0){
-						$movieList = $MovieController->getMovies($sort, $order, $filter, $genre, $cnt, $offset);
+						$movieList = $MovieController->getMovies($category, $sort, $order, $filter, $genre, $cnt, $offset);
 					}				
 					
 					echo json_encode($movieList);
@@ -267,10 +267,10 @@ $app->group('/movies', function() use ($app, $config, $db){
 				}
 			});
 	
-	$app->get('/genres/',
-			function() use ($MovieController){
+	$app->get('/:category/genres/',
+			function($category) use ($MovieController){
 				try{
-					$genres = $MovieController->getGenres();
+					$genres = $MovieController->getGenres($category);
 					
 					$resp = array();
 					$comp = initGET("term");
@@ -289,11 +289,11 @@ $app->group('/movies', function() use ($app, $config, $db){
 				}
 			});
 	
-	$app->get('/compilations/',
-			function() use ($MovieController){
+	$app->get('/:category/compilations/',
+			function($category) use ($MovieController){
 				try{
-					$lists = $MovieController->getLists();
-					$collections = $MovieController->getCollections();
+					$lists = $MovieController->getLists($category);
+					$collections = $MovieController->getCollections($category);
 					$comp = array("lists" => $lists, "collections" => $collections);
 					
 					echo json_encode($comp);
@@ -307,20 +307,8 @@ $app->group('/movies', function() use ($app, $config, $db){
 			function() use ($MovieController){
 				try{
 					$result = $MovieController->updateData();
-					echo json_encode($result);
-				}
-				catch(Exception $e){
-					handleException($e);
-				}
-			});
-	
-	$app->get('/:id',
-			function($id) use ($MovieController) {
-				try{
-					$id = intval($id, 10);
-					$details = $MovieController->getMovieDetails($id);
 					
-					echo json_encode($details);
+					echo json_encode($result);
 				}
 				catch(Exception $e){
 					handleException($e);
@@ -332,21 +320,35 @@ $app->group('/movies', function() use ($app, $config, $db){
 				try{
 					$id = intval($id, 10);
 					$details = $MovieController->lookupMovie($id);
-		
+	
 					echo json_encode($details);
 				}
 				catch(Exception $e){
 					handleException($e);
 				}
 			});
-		
-	$app->post('/:id',
-			function($id) use ($MovieController) {
+	
+	$app->get('/:category/:id',
+			function($category, $id) use ($MovieController) {
 				try{
 					$id = intval($id, 10);
-					$res = $MovieController->updateFromScraper($id, $_POST["movieDBID"], $_POST["filename"]);
+					$details = $MovieController->getMovieDetails($category, $id);
 					
-					return $res;
+					echo json_encode($details);
+				}
+				catch(Exception $e){
+					handleException($e);
+				}
+			});	
+		
+	$app->post('/:category/:id',
+			function($category, $id) use ($MovieController) {
+				echo "updating";
+				try{
+					$id = intval($id, 10);
+					$res = $MovieController->updateFromScraper($category, $id, $_POST["movieDBID"], $_POST["filename"]);
+					var_dump($res);
+					echo $res;
 				}
 				catch(Exception $e){
 					handleException($e);
