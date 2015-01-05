@@ -116,10 +116,10 @@ sections["movies"] = (function(){
 	"use strict";
 	var init;
 		
-	function showDetailsDialog(dbid, movieDBID, filename, type){
-		var url = 'http://' + host + '/movies/';
+	function showDetailsDialog(category, dbid, movieDBID, filename, type){
+		var url = 'http://' + host + '/movies/' + category + '/';
 		if (type === 'lookup'){
-			url = 'http://' + host + '/movies/lookup/';
+			url = 'http://' + host + '/movies/' + category + '/lookup/';
 		}
 		$.ajax({
 			url: url + dbid,
@@ -139,7 +139,7 @@ sections["movies"] = (function(){
 						{text: "Speichern",
 						 click : function(){
 							$.ajax({
-								url: 'http://' + host + '/movies/' + dbid, 
+								url: 'http://' + host + '/movies/' + category + '/' + dbid, 
 								type: 'POST',
 								context: this,
 								data: {filename: filename,
@@ -170,7 +170,7 @@ sections["movies"] = (function(){
 				});
 				$('#movie-id')
 				.on('change', function(){
-					showDetailsDialog(dbid, $(this).val(), filename, 'lookup');
+					showDetailsDialog(category, dbid, $(this).val(), filename, 'lookup');
 				});
 			},
 			error: function(jqXHR, textStatus, errorThrown){
@@ -183,7 +183,7 @@ sections["movies"] = (function(){
 		$('#nm-movie-poster')
 		.off('click')
 		.on('click', function(){
-			var src = $(this).find('img').attr('src'),
+			var src = $(this).attr('src'),
 				div = '<div id="movie-poster-dialog"></div>',
 				img,
 				h = $('.content-wrapper').height(), 
@@ -214,22 +214,24 @@ sections["movies"] = (function(){
 		$('#movie-edit-link')
 		.on('click', function(e){			
 			e.preventDefault();
-			var dbid = $(this).data('id'),
+			var cat = sections.getSubCategory(),
+				dbid = $(this).data('id'),
 				movieDBID = $(this).data('moviedbid'),
 				filename = $(this).data('filename');
-			showDetailsDialog(dbid, movieDBID, filename, 'store');
+			showDetailsDialog(cat, dbid, movieDBID, filename, 'store');
 			
 			return false;
 		});
 	}
 	
 	function updateMovieOverview(query, pushHistory){
-		var loader = '<div id="loader-movie-overview">',
-			ajaxUrl = 'http://' + host + '/movies/',
-			pushUrl = 'http://' + host + '/movies/';
+		var cat = sections.getSubCategory(),
+			loader = '<div id="loader-movie-overview">',
+			ajaxUrl = 'http://' + host + '/movies/' + cat + '/',
+			pushUrl = 'http://' + host + '/movies/' + cat + '/';
 		if (query.length > 0){
-			ajaxUrl += '?' + query + '&display=overview';
-			pushUrl += '?' + query;
+			ajaxUrl += query + '&display=overview';
+			pushUrl += query;
 		}
 		else{
 			ajaxUrl += '?display=overview';
@@ -269,9 +271,10 @@ sections["movies"] = (function(){
 		$('.movie-overview-poster')
 		.on('click', function(){
 			$('#nm-movie-details-wrapper').html('<div id="loader-movie-details"></div>');
-			var id = $(this).data('id');
+			var id = $(this).data('id'),
+				cat = sections.getSubCategory();
 			$.ajax({
-				url: 'http://' + host + '/movies/' + id,
+				url: 'http://' + host + '/movies/' + cat + '/' + id,
 				success: function(data){
 					$('#nm-movie-details-wrapper').html(data);
 					addEditLinkHandler();
@@ -294,8 +297,9 @@ sections["movies"] = (function(){
 		$('#search-box-link')
 		.off('click')
 		.on('click', function(){
+			var cat = sections.getSubCategory();
 			$.ajax({
-				url: 'http://' + host + '/movies/search/',
+				url: 'http://' + host + '/movies/' + cat + '/search/',
 				success: function(data){
 					var filter = $('#hidden-filter').val(),
 						genres = $('#hidden-genres').val(),
@@ -318,7 +322,7 @@ sections["movies"] = (function(){
 						showAutocompleteOnFocus: true,
 						allowSpaces: true,
 						autocomplete: {
-							source: 'http://' + host + '/movies/genres/'
+							source: 'http://' + host + '/movies/' + cat + '/genres/'
 						}
 					});
 					

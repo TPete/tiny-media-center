@@ -320,8 +320,8 @@ $app->group('/shows', $checkAPI($api, $host), function() use ($app, $host, $api)
 
 $app->group('/movies', $checkAPI($api, $host), function() use ($app, $host, $api) {
 
-	$app->get('/', 
-		function() use ($app, $host, $api){
+	$app->get('/:category/', 
+		function($category) use ($app, $host, $api){
 			try{
 				$sort = initGET("sort", "name_asc");
 				$filter = initGET("filter");
@@ -338,12 +338,12 @@ $app->group('/movies', $checkAPI($api, $host), function() use ($app, $host, $api
 					$sort = "name_asc";
 				}
 				
-				$movies = $api->getMovies($sort, $cnt, $offset, $filter, $genres, $collection, $list);
+				$movies = $api->getMovies($category, $sort, $cnt, $offset, $filter, $genres, $collection, $list);
 				
 				$previous = getPreviousLink($offset, $cnt, $sort, $filter, $genres, $collection, $list);
 				$next = getNextLink($offset, $cnt, $movies["cnt"], $sort, $filter, $genres, $collection, $list);
 							
-				$header = "Filme";
+				$header = $category;
 				if ($display === "all"){
 					$app->render("pageHeader.php", array("pageTitle" => $header." Index", 
 							"host" => $host));
@@ -387,10 +387,10 @@ $app->group('/movies', $checkAPI($api, $host), function() use ($app, $host, $api
 				}
 			});
 	
-	$app->get('/search/',
-			function() use ($app, $api){
+	$app->get('/:category/search/',
+			function($category) use ($app, $host, $api){
 				try{
-					$comp = $api->getCompilations();
+					$comp = $api->getCompilations($category);
 					$app->render("movieSearch.php", array("lists" => $comp["lists"], "collections" => $comp["collections"]));
 				}
 				catch(RemoteException $exp){
@@ -398,8 +398,8 @@ $app->group('/movies', $checkAPI($api, $host), function() use ($app, $host, $api
 				}
 			});
 	
-	$app->get('/lookup/:id',
-			function($id) use($app, $api){
+	$app->get('/:category/lookup/:id',
+			function($category, $id) use($app, $host, $api){
 				try{
 					$movie = $api->lookupMovie($_GET["movieDBID"]);
 					if ($movie !== null){
@@ -414,11 +414,11 @@ $app->group('/movies', $checkAPI($api, $host), function() use ($app, $host, $api
 				}
 			});
 	
-	$app->get('/genres/',
-			function() use($api){
+	$app->get('/:category/genres/',
+			function($category) use($app, $host, $api){
 				try{
 					$term = initGET("term", "");
-					$res = $api->getGenres($term);
+					$res = $api->getGenres($category, $term);
 					
 					echo json_encode($res);
 				}
@@ -427,10 +427,10 @@ $app->group('/movies', $checkAPI($api, $host), function() use ($app, $host, $api
 				}
 			});
 	
-	$app->get('/:id',
-			function($id) use ($app, $host, $api){
+	$app->get('/:category/:id',
+			function($category, $id) use ($app, $host, $api){
 				try{
-					$movie = $api->getMovie($id);
+					$movie = $api->getMovie($category, $id);
 					$output = initGET("output", "html");
 					if ($output === "html"){
 						$movie["path"] = $movie["filename"];
@@ -448,10 +448,10 @@ $app->group('/movies', $checkAPI($api, $host), function() use ($app, $host, $api
 			});
 	
 	
-	$app->post('/:dbid',
-			function($dbid) use ($api){
+	$app->post('/:category/:dbid',
+			function($category, $dbid) use ($api){
 				try{
-					echo $api->updateMovie($dbid, $_POST["movieDBID"], $_POST["filename"]);
+					echo $api->updateMovie($category, $dbid, $_POST["movieDBID"], $_POST["filename"]);
 					echo "OK";
 				}
 				catch(RemoteException $exp){

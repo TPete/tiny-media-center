@@ -184,8 +184,8 @@ class RestAPI{
 
 //MOVIES
 	
-	public function getMovie($id){
-		$url = "/movies/".$id;
+	public function getMovie($category, $id){
+		$url = "/movies/".$category."/".$id;
 		$res = $this->curlDownload($url);
 		
 		return $res;
@@ -198,18 +198,17 @@ class RestAPI{
 		return $res;
 	}
 	
-	public function getMovies($sort, $cnt, $offset, $filter = "", $genres = "", $collection = "0", $list = "0"){
-		$url = "/movies/";
+	public function getMovies($category, $sort, $cnt, $offset, $filter = "", $genres = "", $collection = "0", $list = "0"){
+		$url = "/movies/".$category;
 		$args = array("sort" => $sort, "cnt" => $cnt, "offset" => $offset, "filter" => $filter, 
 				"genre" => $genres, "collection" => $collection, "list" => $list);
-				
 		$res = $this->curlDownload($url, $args);
 	
 		return $res;
 	}
 	
-	public function updateMovie($dbID, $movieDBID, $filename){
-		$url = "/movies/".$dbID;
+	public function updateMovie($category, $dbID, $movieDBID, $filename){
+		$url = "/movies/".$category."/".$dbID;
 		$args = array("movieDBID" => $movieDBID, "filename" => $filename);
 		
 		$res = $this->curlPost($url, $args);
@@ -217,8 +216,8 @@ class RestAPI{
 		return $res;
 	}
 	
-	public function getGenres($term){
-		$url = "/movies/genres/";
+	public function getGenres($category, $term){
+		$url = "/movies/".$category."/genres/";
 		$args = array("term" => $term);
 		
 		$res = $this->curlDownload($url, $args);
@@ -226,8 +225,8 @@ class RestAPI{
 		return $res;
 	}
 	
-	public function getCompilations(){
-		$url = "/movies/compilations/";
+	public function getCompilations($category){
+		$url = "/movies/".$category."/compilations/";
 		$res = $this->curlDownload($url);
 	
 		return $res;
