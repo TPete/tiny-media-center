@@ -209,7 +209,7 @@ label.config > input{
 	float: left;
 }
 
-#nm-movie-poster{
+#nm-movie-poster > img{
 	margin-right: 10px;
 	cursor: pointer;
 }

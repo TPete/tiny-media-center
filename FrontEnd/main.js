@@ -180,7 +180,8 @@ sections["movies"] = (function(){
 	}
 	
 	function addPosterClickHandler(){
-		$('#nm-movie-poster')
+		$('#nm-movie-poster > img')
+		.eq(0)
 		.off('click')
 		.on('click', function(){
 			var src = $(this).attr('src'),
