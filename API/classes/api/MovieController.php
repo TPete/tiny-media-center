@@ -11,15 +11,6 @@ class MovieController extends Controller{
 	private $categoryNames;
 	
 	public function __construct($path, $alias, $dbConfig, $apiKey){
-// 		$this->picturePath = $path."pictures/";
-// 		if (!file_exists($this->picturePath)){
-// 			$res = mkdir($this->picturePath);
-// 			if (!$res){
-// 				throw new \Exception("Failed to create directory for movie pictures");
-// 			}
-// 		}
-// 		$this->pictureAlias = $alias."pictures/";
-		
 		$scraper = new TMDBWrapper($apiKey);
 		$store = new MovieStoreDB($dbConfig);
 		parent::__construct($path, $alias, $store, $scraper);
@@ -124,13 +115,14 @@ class MovieController extends Controller{
 	 * 
 	 * @return the movie details, an error message if the movie was not found
 	 */
-	public function getMovieDetails($categroy, $id){
-		$movie = $this->store->getMovieById($categroy, $id);
+	public function getMovieDetails($category, $id){
+		$movie = $this->store->getMovieById($category, $id);
 		if (isset($movie["error"])){
 			return $movie;
 		}
 		$movie["filename"] = $this->getCategoryAlias($category).$movie["filename"];
-		$movie["poster"] = $this->pictureAlias.$movie["movie_db_id"]."_333x500.jpg";
+		$alias = $this->getCategoryAlias($category);
+		$movie["poster"] = $alias."pictures/".$movie["movie_db_id"]."_333x500.jpg";
 		$actors = explode(",", $movie["actors"]);
 		$movie["actors"] = array_slice($actors, 0, 4);
 		$movie["countries"] = explode(",", $movie["countries"]);
