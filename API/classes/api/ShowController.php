@@ -27,11 +27,11 @@ class ShowController extends Controller{
 		* Shows can be placed on level (B) to put them into several categories
 		* (the level (A) folders). The setup is auto detected below.
 		*/
-		$folders = Util::getFolders("/media/tiny_serien_test/");
-		$sub = Util::getFolders("/media/tiny_serien_test/".$folders[0]."/");
+		$folders = Util::getFolders($this->path);
+		$sub = Util::getFolders($this->path.$folders[0]."/");
 		$this->useDefault = true;
 		if (count($sub) > 0){
-			$files = glob("/media/tiny_serien_test/".$folders[0]."/".$sub[0]."/*.avi");
+			$files = glob($this->path.$folders[0]."/".$sub[0]."/*.avi");
 			if (count($files) > 0){
 				$this->useDefault = false;
 			}
