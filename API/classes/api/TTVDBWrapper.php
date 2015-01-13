@@ -11,16 +11,25 @@ class TTVDBWrapper extends DBAPIWrapper{
 	public function __construct($apiKey){
 		parent::__construct("http://thetvdb.com/api/");
 		$this->apiKey = $apiKey;
+		libxml_use_internal_errors(true);
 	}
 	
 	public function getSeriesId($name){
 		$url = "GetSeries.php?language=de&seriesname=".$name;
 		$raw = $this->curlDownload($url);
-		$xml = new \SimpleXMLElement($raw);
-		if (!empty($xml->Series[0])){
-			$id = $xml->Series[0]->id;
-			
-			return (string)$id;
+		if (strlen($raw) === 0){
+			throw new ScrapeException("Failed to retrieve series id: Web API returned no data.");
+		}
+		try{
+			$xml = new \SimpleXMLElement($raw);
+			if (!empty($xml->Series[0])){
+				$id = $xml->Series[0]->id;
+				
+				return (string)$id;
+			}
+		}
+		catch(Exception $e){
+			throw new ScrapeException("Failed to retrieve series id: ".$e->getMessage());
 		}
 		throw new ScrapeException("Failed to retrieve series id");
 	}
@@ -28,22 +37,35 @@ class TTVDBWrapper extends DBAPIWrapper{
 	public function getSeriesInfoById($id){
 		$url = $this->apiKey."/series/".$id."/all/de.xml";
 		$raw = $this->curlDownload($url);
-		$xml = new \SimpleXMLElement($raw);
-		$rawEpisodes = $xml->Episode;
-		$seasons = array();
-		foreach($rawEpisodes as $re){
-			$seasonNumber = (int)$re->SeasonNumber;
-			if ($seasonNumber === 0){//skip specials
-				continue;
+		try{
+			if (strlen($raw) === 0){
+				throw new ScrapeException("Failed to retrieve series info for id ".$id.": Web API returned no data.");
 			}
-			if (!isset($seasons[$seasonNumber])){
-				$seasons[$seasonNumber] = array();
+			$xml = new \SimpleXMLElement($raw);
+			$rawEpisodes = $xml->Episode;
+			$seasons = array();
+			foreach($rawEpisodes as $re){
+				$seasonNumber = (int)(strlen($re->DVD_season) > 0 ? $re->DVD_season : $re->SeasonNumber);
+				
+				if ($seasonNumber === 0){//skip specials
+					continue;
+				}
+				if (!isset($seasons[$seasonNumber])){
+					$seasons[$seasonNumber] = array();
+				}
+				$episodeNumber = (int)(strlen($re->DVD_episodenumber) > 0 ? $re->DVD_episodenumber : $re->EpisodeNumber);
+				$seasons[$seasonNumber][$episodeNumber] = array("title" => (string)$re->EpisodeName, "description" => (string)$re->Overview);
 			}
-			$episodeNumber = (int)$re->EpisodeNumber;
-			$seasons[$seasonNumber][$episodeNumber] = array("title" => (string)$re->EpisodeName, "description" => (string)$re->Overview);
+			ksort($seasons);
+			foreach($seasons as &$season){
+				ksort($season);
+			}
+			
+			return $seasons;
 		}
-		
-		return $seasons;
+		catch(Exception $e){
+			throw new ScrapeException("Failed to retrieve series info for id ".$id);
+		}
 	}
 	
 	public function getSeriesInfoByName($name){

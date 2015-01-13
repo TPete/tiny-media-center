@@ -211,17 +211,19 @@ class ShowController extends Controller{
 		foreach($shows as $show){
 			try{
 				$protocol .= "Updating ".$show["title"]." ... ";
-				//TODO: check if bg image exists before downloading from web api
 				if ($show["tvdb_id"] === null){					
 					$search = urlencode($show["title"]);
 					$id = $this->scraper->getSeriesId($search);
-					$path = $this->getCategoryPath($category);
-					$path .= $show["folder"]."/bg.jpg";
-					$this->scraper->downloadBG($id, $path);
 					$this->store->updateDetails($category, $show["folder"], $show["title"], $id);
 				}
 				else{
 					$id = $show["tvdb_id"];
+				}
+				$path = $this->getCategoryPath($category);
+				$path .= $show["folder"]."/bg.jpg";
+				if (!file_exists($path)){
+					$protocol .= "Getting bakground image ... ";
+					$this->scraper->downloadBG($id, $path);
 				}
 				$protocol .= "Scraping ... ";
 				$seasons = $this->scraper->getSeriesInfoById($id);
@@ -230,11 +232,11 @@ class ShowController extends Controller{
 					$protocol .= "Done";
 				}
 				else{
-					$protocol .= "Scraping failed (check ID)";
+					$protocol .= "Scraping failed (check ID): No data";
 				}
 			}
 			catch(ScrapeException $e){
-				$protocol .= "Scraping failed (check ID)";
+				$protocol .= "Scraping failed (check ID): ".$e->getMessage();
 			}
 			
 			$protocol .= "<br>";
