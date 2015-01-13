@@ -219,7 +219,12 @@ class MovieController extends Controller{
 		foreach($res as $movie){
 			$protocol .= $movie."<br>";
 		}
-				
+		$protocol .= "<h2>Duplicate movie entries</h2>";
+		$res = $this->store->checkDuplicates($category);
+		foreach($res as $movie){
+			$protocol .= $movie."<br>";
+		}
+			
 		$missing = $this->store->checkExisting($category, $path);
 		
 		$protocol .= "<h2>Missing movie entries (new movies)</h2>";

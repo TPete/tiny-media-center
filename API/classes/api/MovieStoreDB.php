@@ -390,6 +390,24 @@ class MovieStoreDB extends Store{
 		return $missing;
 	}
 	
+	public function checkDuplicates($category){
+		$db = $this->connect();
+		$sql = "Select Title
+				From movies
+				Where CATEGORY = :category
+				Group By Title
+				Having count(*) > 1";
+		$stmt = $db->prepare($sql);
+		$stmt->bindValue(":category", $category, \PDO::PARAM_STR);
+		$stmt->execute();
+		$duplicates = array();
+		while($row = $stmt->fetch(\PDO::FETCH_ASSOC)){
+			$duplicates[] = $row["Title"];
+		}
+		
+		return $duplicates;
+	}
+	
 	public function checkCollections($category){
 		$db = $this->connect();
 		$sql = "SELECT mov.collection_id id
