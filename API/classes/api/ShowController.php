@@ -185,7 +185,7 @@ class ShowController extends Controller{
 		$protocol .= $this->updateEpisodes($category);
 		
 		$protocol .= "<h3>Update thumbnails</h3>";
-		$this->updateThumbs($category);
+		$protocol .= $this->updateThumbs($category);
 		
 		return $protocol;
 	}
@@ -253,8 +253,15 @@ class ShowController extends Controller{
 			$path = $basePath.$folder."/";
 			$protocol .= $path;
 			$dim = 200;
-			Util::resizeImage($path."bg.jpg", $path."thumb_".$dim.".jpg", $dim, $dim);
-			$protocol .= "done";
+			if (!file_exists($path."thumb_".$dim.".jpg")){
+				if (file_exists($path."bg.jpg")){
+					Util::resizeImage($path."bg.jpg", $path."thumb_".$dim.".jpg", $dim, $dim);
+					$protocol .= "done";
+				}
+				else{
+					$protocol .= "Failed to create thumbnail: no background image.";
+				}
+			}
 			$protocol .= "<br>";
 		}
 		
