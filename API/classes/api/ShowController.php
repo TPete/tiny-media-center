@@ -182,10 +182,12 @@ class ShowController extends Controller{
 		$protocol .= $this->removeObsoleteShows($category);
 		
 		$protocol .= "<h3>Update episodes</h3>";
-		$protocol .= $this->updateEpisodes($category);
+		$shows = $this->store->getShows($category);
+		$protocol .= $this->updateEpisodes($category, $shows);
 		
 		$protocol .= "<h3>Update thumbnails</h3>";
-		$protocol .= $this->updateThumbs($category);
+		$folders = $this->getFolders($category);
+		$protocol .= $this->updateThumbs($category, $folders);
 		
 		return $protocol;
 	}
@@ -205,9 +207,8 @@ class ShowController extends Controller{
 		return $this->store->removeIfObsolete($category, $folders);
 	}
 	
-	private function updateEpisodes($category){
+	private function updateEpisodes($category, $shows){
 		$protocol = "";
-		$shows = $this->store->getShows($category);
 		foreach($shows as $show){
 			try{
 				$protocol .= "Updating ".$show["title"]." ... ";
@@ -245,9 +246,8 @@ class ShowController extends Controller{
 		return $protocol;
 	}
 	
-	private function updateThumbs($category){
+	private function updateThumbs($category, $folders){
 		$protocol = "";
-		$folders = $this->getFolders($category);
 		$basePath = $this->getCategoryPath($category);
 		foreach($folders as $folder){
 			$path = $basePath.$folder."/";
