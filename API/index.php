@@ -222,7 +222,8 @@ $app->group('/shows', function() use ($app, $config, $db){
 	$app->post('/:category/edit/:id/',
 			function($category, $id) use ($ShowController) {
 				try{
-					echo $ShowController->updateDetails($category, $id, $_POST["title"], $_POST["tvdbId"]);
+					$tvdbid = (int)$_POST["tvdbId"];
+					echo $ShowController->updateDetails($category, $id, $_POST["title"], $tvdbid);
 				}
 				catch(Exception $e){
 					handleException($e);

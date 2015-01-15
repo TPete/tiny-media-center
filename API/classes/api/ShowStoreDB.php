@@ -73,8 +73,29 @@ class ShowStoreDB extends Store{
 		return $desc;
 	}
 	
+	/**
+	 * Update the title and the web database id of a show.
+	 * 
+	 * Return the old web database id.
+	 * 
+	 * 
+	 * @param String $category The category name.
+	 * @param String $folder The folder name.
+	 * @param String $title The new show title.
+	 * @param int $tvdbId The new web database id.
+	 * @return int The old web database id.
+	 */
 	public function updateDetails($category, $folder, $title, $tvdbId){
 		$db = $this->connect();
+		$sql = "Select TVDB_ID
+				From shows
+				Where category = :category and folder = :folder";
+		$stmt = $db->prepare($sql);
+		$stmt->bindValue(":category", $category, \PDO::PARAM_STR);
+		$stmt->bindValue(":folder", $folder, \PDO::PARAM_STR);
+		$stmt->execute();
+		$row = $stmt->fetch(\PDO::FETCH_ASSOC);
+		
 		$sql = "Update shows
 				set Title = :title,
 				TVDB_ID = :tvdb_id
@@ -85,6 +106,8 @@ class ShowStoreDB extends Store{
 		$stmt->bindValue(":category", $category, \PDO::PARAM_STR);
 		$stmt->bindValue(":folder", $folder, \PDO::PARAM_STR);
 		$stmt->execute();
+		
+		return $row["TVDB_ID"];
 	}
 	
 	public function createIfMissing($category, $folder){

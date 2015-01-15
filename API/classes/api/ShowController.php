@@ -133,8 +133,24 @@ class ShowController extends Controller{
 		return $this->store->getEpisodeDescription($category, $id);
 	}
 	
-	public function updateDetails($category, $id, $title, $tvdbId){
-		return $this->store->updateDetails($category, $id, $title, $tvdbId);
+	public function updateDetails($category, $folder, $title, $tvdbId){
+		$oldId = $this->store->updateDetails($category, $folder, $title, $tvdbId);
+		if ($oldId !== $tvdbId){
+			$path = $this->getCategoryPath($category);
+			$path .= $folder."/bg.jpg";
+			if (file_exists($path)){
+				unlink($path);
+			}
+			$path = $this->getCategoryPath($category);
+			$path .= $folder."/thumb_200.jpg";
+			if (file_exists($path)){
+				unlink($path);
+			}
+			$shows = array();
+			$shows[] = $this->store->getShowDetails($category, $folder);
+			$this->updateEpisodes($category, $shows);
+			$this->updateThumbs($category, array($folder));
+		}
 	}
 	
 	private function getCategory($base, $category){
