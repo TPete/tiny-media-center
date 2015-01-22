@@ -177,9 +177,13 @@ class MovieController extends Controller{
 	}
 		
 	private function searchMovie($category, $title, $filename){
-		$movie = $this->scraper->searchMovie($title, $filename, $this->getCategoryPath($category));
-		
-		return $this->updateMovie($category, $movie);
+		try{
+			$movie = $this->scraper->searchMovie($title, $filename, $this->getCategoryPath($category));
+			return $this->updateMovie($category, $movie);
+		}
+		catch(ScrapeException $e){
+			return $e->getMessage();
+		}
 	}
 	
 	public function lookupMovie($id){
@@ -269,14 +273,19 @@ class MovieController extends Controller{
 	}
 	
 	private function downloadMoviePic($picturePath, $id, $movie = ""){
-		if ($movie === ""){
-			$movie = $this->scraper->getMovieInfo($id);
+		try{
+			if ($movie === ""){
+				$movie = $this->scraper->getMovieInfo($id);
+			}
+			if ($movie !== null){
+				$this->scraper->downloadPoster($id, $movie->getPosterPath(), $picturePath);
+				return "OK";
+			}
+			return "No Match";
 		}
-		if ($movie !== null){
-			$this->scraper->downloadPoster($id, $movie->getPosterPath(), $picturePath);
-			return "OK";
+		catch(ScrapeException $e){
+			return $e->getMessage();
 		}
-		return "No Match";
 	}
 	
 	private function resizeMoviePics($picsDir){

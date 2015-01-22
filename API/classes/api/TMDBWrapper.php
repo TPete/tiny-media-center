@@ -44,42 +44,49 @@ class TMDBWrapper extends DBAPIWrapper{
 		$args = array("append_to_response" => "credits");
 		$data = $this->curlDownload($url, $args);
 		$data = json_decode($data, true);
-		$tmp = $data["genres"];
-		$genres = array();
-		foreach($tmp as $ele){
-			$genres[] = $ele["name"];
-		}
-		$tmp = $data["production_countries"];
-		$countries = array();
-		foreach($tmp as $ele){
-			$countries[] = $ele["iso_3166_1"];
-		}
-		$credits = $data["credits"];
-		$tmp = $credits["cast"];
-		$actors = array();
-		foreach($tmp as $ele){
-			$actors[] = $ele["name"];
-		}
-		$tmp = $credits["crew"];
-		$director = "";
-		foreach($tmp as $ele){
-			if ($ele["job"] === "Director"){
-				$director = $ele["name"];
-				break;
+		if ($data !== null && is_array($data) && isset($data["id"])){
+			$tmp = $data["genres"];
+			$genres = array();
+			foreach($tmp as $ele){
+				$genres[] = $ele["name"];
 			}
+			$tmp = $data["production_countries"];
+			$countries = array();
+			foreach($tmp as $ele){
+				$countries[] = $ele["iso_3166_1"];
+			}
+			$credits = $data["credits"];
+			$tmp = $credits["cast"];
+			$actors = array();
+			foreach($tmp as $ele){
+				$actors[] = $ele["name"];
+			}
+			$tmp = $credits["crew"];
+			$director = "";
+			foreach($tmp as $ele){
+				if ($ele["job"] === "Director"){
+					$director = $ele["name"];
+					break;
+				}
+			}
+			$collection_id = $data["belongs_to_collection"]["id"];
+			
+			$movieData = array("id" => $id, "title" => $data["title"], "filename" => $filename,
+				"overview" => $data["overview"], "poster" => $id."_big.jpg", "poster_path" => $data["poster_path"], 
+				"release_date" => $data["release_date"], "genres" => $genres, "countries" => $countries, 
+				"actors" => $actors, "director" => $director, "collection_id" => $collection_id,
+				"original_title" => $data["original_title"]);
+			
+			
+			$mov = new \Movie($movieData, $movieDir);
+			
+			return $mov;
 		}
-		$collection_id = $data["belongs_to_collection"]["id"];
-		
-		$movieData = array("id" => $id, "title" => $data["title"], "filename" => $filename,
-			"overview" => $data["overview"], "poster" => $id."_big.jpg", "poster_path" => $data["poster_path"], 
-			"release_date" => $data["release_date"], "genres" => $genres, "countries" => $countries, 
-			"actors" => $actors, "director" => $director, "collection_id" => $collection_id,
-			"original_title" => $data["original_title"]);
-		
-		
-		$mov = new \Movie($movieData, $movieDir);
-		
-		return $mov;
+		$msg = "Unknown error";
+		if ($data !== null && is_array($data) && isset($data["status_message"])){
+			$msg = $data["status_message"];
+		}
+		throw new ScrapeException("Failed to retrieve movie info for id ".$id." (".$msg.")");
 	}
 	
 	/**
@@ -97,13 +104,13 @@ class TMDBWrapper extends DBAPIWrapper{
 		
 		$data = $this->curlDownload($url, $args);
 		$data = json_decode($data, true);
-		$result = null;
 		if (isset($data["results"][0])){
 			$id = $data["results"][0]["id"];
 			$result = $this->getMovieInfo($id, $path, $filename);
+			return $result;
 		}
 		
-		return $result;
+		throw new ScrapeException("Failed to retrieve movie info for title ".$title." (No data available)");
 	}
 	
 }
