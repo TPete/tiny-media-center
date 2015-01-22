@@ -355,14 +355,16 @@ class MovieController extends Controller{
 	}
 	
 	private function updateCollectionFromScraper($category, $collectionId){
-		$collectionData = $this->scraper->getCollectionInfo($collectionId);
-		if ($collectionData !== null){
+		try{
+			$collectionData = $this->scraper->getCollectionInfo($collectionId);
 			$this->store->updateCollectionById($category, $collectionData, $collectionId);
+			$collectionStr = "[Id: ".$collectionData["id"];
+			$collectionStr .= ", Name: ".$collectionData["name"];
+			$collectionStr .= ", Overview: ".$collectionData["overview"]."]";
 		}
-		
-		$collectionStr = "[Id: ".$collectionData["id"];
-		$collectionStr .= ", Name: ".$collectionData["name"];
-		$collectionStr .= ", Overview: ".$collectionData["overview"]."]";
+		catch(ScrapeException $e){
+			$collectionStr = $e->getMessage();
+		}		
 		
 		return $collectionStr;
 	}

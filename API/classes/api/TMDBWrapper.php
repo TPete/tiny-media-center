@@ -29,8 +29,14 @@ class TMDBWrapper extends DBAPIWrapper{
 		$url = "collection/".$id;
 		$data = $this->curlDownload($url);
 		$data = json_decode($data, true);
-		
-		return $data;
+		if ($data !== null && is_array($data) && isset($data["id"])){
+			return $data;
+		}
+		$msg = "Unknown error";
+		if ($data !== null && is_array($data) && isset($data["status_message"])){
+			$msg = $data["status_message"];
+		}
+		throw new ScrapeException("Failed to retrieve collection info for id ".$id." (".$msg.")");
 	}
 	
 	public function getMovieInfo($id, $movieDir = "", $filename = ""){
