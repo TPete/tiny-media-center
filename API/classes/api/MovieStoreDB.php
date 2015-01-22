@@ -296,7 +296,7 @@ class MovieStoreDB extends Store{
 		else{
 			$sqlOld = "Delete
 						From collection_parts
-						Where COLLECTION_ID = ".$row["MOVIE_DB_ID"];
+						Where COLLECTION_ID = ".$row["ID"];
 			$result = $db->query($sqlOld);
 			$sql = "Update collections
 					set MOVIE_DB_ID = :movieDBId,
