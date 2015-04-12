@@ -66,7 +66,7 @@ class ShowController extends Controller{
 		foreach($overview as $show){
 			$result[] = array("folder" => $show["folder"], "title" => $show["title"],
 					"tvdb_id" => $show["tvdb_id"],  
-					"thumbUrl" => $path.$show["folder"]."/thumb_200.jpg");
+					"thumbUrl" => $path.$show["folder"]."/thumb_260.jpg");
 		}
 		
 		return $result;
@@ -142,7 +142,7 @@ class ShowController extends Controller{
 				unlink($path);
 			}
 			$path = $this->getCategoryPath($category);
-			$path .= $folder."/thumb_200.jpg";
+			$path .= $folder."/thumb_260.jpg";
 			if (file_exists($path)){
 				unlink($path);
 			}
@@ -266,7 +266,7 @@ class ShowController extends Controller{
 		foreach($folders as $folder){
 			$path = $basePath.$folder."/";
 			$protocol .= $path;
-			$dim = 200;
+			$dim = 260;
 			if (!file_exists($path."thumb_".$dim.".jpg")){
 				if (file_exists($path."bg.jpg")){
 					Util::resizeImage($path."bg.jpg", $path."thumb_".$dim.".jpg", $dim, $dim);
