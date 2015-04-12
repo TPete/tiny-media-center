@@ -34,7 +34,7 @@ class TTVDBWrapper extends DBAPIWrapper{
 		throw new ScrapeException("Failed to retrieve series id");
 	}
 	
-	public function getSeriesInfoById($id){
+	public function getSeriesInfoById($id, $orderingScheme){
 		$url = $this->apiKey."/series/".$id."/all/de.xml";
 		$raw = $this->curlDownload($url);
 		try{
@@ -45,7 +45,12 @@ class TTVDBWrapper extends DBAPIWrapper{
 			$rawEpisodes = $xml->Episode;
 			$seasons = array();
 			foreach($rawEpisodes as $re){
-				$seasonNumber = (int)(strlen($re->DVD_season) > 0 ? $re->DVD_season : $re->SeasonNumber);
+				if ($orderingScheme === "DVD"){
+					$seasonNumber = (int)(strlen($re->DVD_season) > 0 ? $re->DVD_season : $re->SeasonNumber);
+				}
+				if ($orderingScheme === "Aired"){
+					$seasonNumber = (int)$re->SeasonNumber;
+				}
 				
 				if ($seasonNumber === 0){//skip specials
 					continue;
@@ -53,7 +58,12 @@ class TTVDBWrapper extends DBAPIWrapper{
 				if (!isset($seasons[$seasonNumber])){
 					$seasons[$seasonNumber] = array();
 				}
-				$episodeNumber = (int)(strlen($re->DVD_episodenumber) > 0 ? $re->DVD_episodenumber : $re->EpisodeNumber);
+				if ($orderingScheme === "DVD"){
+					$episodeNumber = (int)(strlen($re->DVD_episodenumber) > 0 ? $re->DVD_episodenumber : $re->EpisodeNumber);
+				}
+				if ($orderingScheme === "Aired"){
+					$episodeNumber = (int)$re->EpisodeNumber;
+				}
 				$seasons[$seasonNumber][$episodeNumber] = array("title" => (string)$re->EpisodeName, "description" => (string)$re->Overview);
 			}
 			ksort($seasons);

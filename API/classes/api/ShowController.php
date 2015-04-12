@@ -232,18 +232,16 @@ class ShowController extends Controller{
 					$search = urlencode($show["title"]);
 					$id = $this->scraper->getSeriesId($search);
 					$this->store->updateDetails($category, $show["folder"], $show["title"], $id);
-				}
-				else{
-					$id = $show["tvdb_id"];
+					$show = $this->store->getShowDetails($category, $show["folder"]);
 				}
 				$path = $this->getCategoryPath($category);
 				$path .= $show["folder"]."/bg.jpg";
 				if (!file_exists($path)){
 					$protocol .= "Getting bakground image ... ";
-					$this->scraper->downloadBG($id, $path);
+					$this->scraper->downloadBG($show["tvdb_id"], $path);
 				}
 				$protocol .= "Scraping ... ";
-				$seasons = $this->scraper->getSeriesInfoById($id);
+				$seasons = $this->scraper->getSeriesInfoById($show["tvdb_id"], $show["ordering_scheme"]);
 				if (count($seasons) > 0){
 					$this->store->updateEpisodes($show["id"], $seasons);
 					$protocol .= "Done";

@@ -10,7 +10,7 @@ class ShowStoreDB extends Store{
 		
 	public function getShows($category){
 		$db = $this->connect();
-		$sql = "Select id, title, folder, tvdb_id
+		$sql = "Select id, title, folder, tvdb_id, ordering_scheme
 				From shows
 				Where category = :category 
 				order by title";
@@ -27,7 +27,7 @@ class ShowStoreDB extends Store{
 	
 	public function getShowDetails($category, $folder){
 		$db = $this->connect();
-		$sql = "Select id, title, folder, tvdb_id
+		$sql = "Select id, title, folder, tvdb_id, ordering_scheme
 				From shows
 				Where category = :category and folder = :folder 
 				order by title";
@@ -122,8 +122,8 @@ class ShowStoreDB extends Store{
 		$row = $stmt->fetch(\PDO::FETCH_ASSOC);
 		if ($row["cnt"] === "0"){
 			$title = str_replace("-", " ", $folder);
-			$sql = "Insert into shows(category, folder, title)
-					Values (:category, :folder, :title)";
+			$sql = "Insert into shows(category, folder, title, ordering_scheme)
+					Values (:category, :folder, :title, 'Aired')";
 			$stmt = $db->prepare($sql);
 			$stmt->bindValue(":category", $category, \PDO::PARAM_STR);
 			$stmt->bindValue(":folder", $folder, \PDO::PARAM_STR);
