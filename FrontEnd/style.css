@@ -350,6 +350,10 @@ label.config > input{
 	.sub-category{
 		width: 190px;
 	}
+	.sub-category, .thumbnail{
+		width: 190px;
+		height: 107px;
+	}
 	#nm-movie-details-wrapper{
 		height: 340px;
 	}
@@ -393,6 +397,10 @@ label.config > input{
 	}
 	#episode-details{
 		max-height: 400px;
+	}
+	.sub-category, .thumbnail{
+		width: 200px;
+		height: 112.5px;
 	}
 	.content-wrapper,.series-title{
 		width: 1000px;
@@ -462,6 +470,10 @@ label.config > input{
 	#episode-details{
 		max-height: 500px;
 	}
+	.sub-category, .thumbnail{
+		width: 200px;
+		height: 112.5px;
+	}
 	.content-wrapper,.series-title{
 		width: 1400px;
 	}
@@ -521,6 +533,79 @@ label.config > input{
 		margin: 90px 10px;
 	}
 }
+
+@media (min-width: 1900px){
+	#episodes-outer-wrapper, .episodes-wrapper{
+		height: 1020px;
+		width: 1820px;
+	}
+	#episode-details{
+		max-height: 500px;
+	}
+	.sub-category, .thumbnail{
+		width: 260px;
+		height: 146.25px;
+	}
+	.content-wrapper,.series-title{
+		width: 1820px;
+	}
+	.movie-list, .collection-list, .people-list{
+		min-height: 440px;
+		max-height: 640px;
+	}
+	#movie-details-poster{
+		height: 450px;
+		width: 300px;
+	}
+	
+	#movie-details-info{
+		max-width: 300px;
+	}
+	
+	.movie-details-overview{
+		max-height: 250px;
+	}
+	
+	.movie-collection-details{
+		min-height: 510px;
+		max-height: 710px;
+	}
+	#nm-movie-details-wrapper{
+		height: 640px;
+		padding-bottom: 10px;
+	}
+	#nm-movie-poster>img{
+		height: 600px;
+		width: 400px;
+	}
+	#nm-movie-details{
+		width: 1380px;
+	}
+	#nm-movie-details-info{
+		width: 500px;
+		padding: 20px;
+	}
+	.nm-movie-details-overview{
+		width: 930px;
+		max-height: 600px;
+		padding: 20px;
+	}
+	#loader-movie-overview{
+		width: 1080px;
+	}
+	.movie-overview-poster, #loader-movie-overview>div{
+		height: 330px;
+		width: 220px;
+	}
+	#movie-overview{
+		width: 1485px;
+	}
+	.movie-overview-nav, .movie-overview-nav:VISITED{
+		padding: 30px 20px 40px;
+		margin: 90px 10px;
+	}
+}
+
 
 #movie-details, #movie-details-dialog{
 	padding: 10px;
