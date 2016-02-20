@@ -536,7 +536,7 @@ label.config > input{
 
 @media (min-width: 1900px){
 	#episodes-outer-wrapper, .episodes-wrapper{
-		height: 1020px;
+		height: 950px;
 		width: 1820px;
 	}
 	#episode-details{
@@ -571,12 +571,12 @@ label.config > input{
 		max-height: 710px;
 	}
 	#nm-movie-details-wrapper{
-		height: 640px;
+		height: 615px;
 		padding-bottom: 10px;
 	}
 	#nm-movie-poster>img{
-		height: 600px;
-		width: 400px;
+		height: 580px;
+		width: 386px;
 	}
 	#nm-movie-details{
 		width: 1380px;
@@ -591,7 +591,7 @@ label.config > input{
 		padding: 20px;
 	}
 	#loader-movie-overview{
-		width: 1080px;
+		width: 1320px;
 	}
 	.movie-overview-poster, #loader-movie-overview>div{
 		height: 330px;
