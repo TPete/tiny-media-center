@@ -123,8 +123,13 @@ class ShowController extends Controller{
 		}
 		
 		$path = $this->getCategoryAlias($category);
-		$result = array("title" => $showDetails["title"], "seasons" => $showData,
-				"tvdbId" => $showDetails["tvdb_id"], "imageUrl" => $path.$id."/bg.jpg");
+		$result = array(
+			"title"    => $showDetails["title"],
+			"seasons"  => $showData,
+			"tvdbId"   => $showDetails["tvdb_id"], 
+			"imageUrl" => $path.$id."/bg.jpg",
+			"lang"     => $showDetails["lang"]
+		);
 		
 		return $result;
 	}
@@ -133,8 +138,8 @@ class ShowController extends Controller{
 		return $this->store->getEpisodeDescription($category, $id);
 	}
 	
-	public function updateDetails($category, $folder, $title, $tvdbId){
-		$oldId = $this->store->updateDetails($category, $folder, $title, $tvdbId);
+	public function updateDetails($category, $folder, $title, $tvdbId, $lang){
+		$oldId = $this->store->updateDetails($category, $folder, $title, $tvdbId, $lang);
 		if ($oldId !== $tvdbId){
 			$path = $this->getCategoryPath($category);
 			$path .= $folder."/bg.jpg";
@@ -231,7 +236,7 @@ class ShowController extends Controller{
 				if ($show["tvdb_id"] === null){					
 					$search = urlencode($show["title"]);
 					$id = $this->scraper->getSeriesId($search);
-					$this->store->updateDetails($category, $show["folder"], $show["title"], $id);
+					$this->store->updateDetails($category, $show["folder"], $show["title"], $id, $show["lang"]);
 					$show = $this->store->getShowDetails($category, $show["folder"]);
 				}
 				$path = $this->getCategoryPath($category);
@@ -241,7 +246,7 @@ class ShowController extends Controller{
 					$this->scraper->downloadBG($show["tvdb_id"], $path);
 				}
 				$protocol .= "Scraping ... ";
-				$seasons = $this->scraper->getSeriesInfoById($show["tvdb_id"], $show["ordering_scheme"]);
+				$seasons = $this->scraper->getSeriesInfoById($show["tvdb_id"], $show["ordering_scheme"], $show["lang"]);
 				if (count($seasons) > 0){
 					$this->store->updateEpisodes($show["id"], $seasons);
 					$protocol .= "Done";

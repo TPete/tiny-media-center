@@ -10,7 +10,7 @@ class ShowStoreDB extends Store{
 		
 	public function getShows($category){
 		$db = $this->connect();
-		$sql = "Select id, title, folder, tvdb_id, ordering_scheme
+		$sql = "Select id, title, folder, tvdb_id, ordering_scheme, lang
 				From shows
 				Where category = :category 
 				order by title";
@@ -27,7 +27,7 @@ class ShowStoreDB extends Store{
 	
 	public function getShowDetails($category, $folder){
 		$db = $this->connect();
-		$sql = "Select id, title, folder, tvdb_id, ordering_scheme
+		$sql = "Select id, title, folder, tvdb_id, ordering_scheme, lang
 				From shows
 				Where category = :category and folder = :folder 
 				order by title";
@@ -78,14 +78,15 @@ class ShowStoreDB extends Store{
 	 * 
 	 * Return the old web database id.
 	 * 
-	 * 
 	 * @param String $category The category name.
 	 * @param String $folder The folder name.
 	 * @param String $title The new show title.
 	 * @param int $tvdbId The new web database id.
+	 * @param String $lang The language
+	 * 
 	 * @return int The old web database id.
 	 */
-	public function updateDetails($category, $folder, $title, $tvdbId){
+	public function updateDetails($category, $folder, $title, $tvdbId, $lang){
 		$db = $this->connect();
 		$sql = "Select TVDB_ID
 				From shows
@@ -98,11 +99,13 @@ class ShowStoreDB extends Store{
 		
 		$sql = "Update shows
 				set Title = :title,
-				TVDB_ID = :tvdb_id
+				TVDB_ID = :tvdb_id,
+				Lang = :lang
 				Where category = :category and folder = :folder";
 		$stmt = $db->prepare($sql);
 		$stmt->bindValue(":title", $title, \PDO::PARAM_STR);
 		$stmt->bindValue(":tvdb_id", $tvdbId, \PDO::PARAM_INT);
+		$stmt->bindValue(":lang", $lang);
 		$stmt->bindValue(":category", $category, \PDO::PARAM_STR);
 		$stmt->bindValue(":folder", $folder, \PDO::PARAM_STR);
 		$stmt->execute();

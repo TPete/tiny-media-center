@@ -34,8 +34,8 @@ class TTVDBWrapper extends DBAPIWrapper{
 		throw new ScrapeException("Failed to retrieve series id");
 	}
 	
-	public function getSeriesInfoById($id, $orderingScheme){
-		$url = $this->apiKey."/series/".$id."/all/de.xml";
+	public function getSeriesInfoById($id, $orderingScheme, $lang = 'de'){
+		$url = $this->apiKey."/series/".$id."/all/".$lang.".xml";
 		$raw = $this->curlDownload($url);
 		try{
 			if (strlen($raw) === 0){
