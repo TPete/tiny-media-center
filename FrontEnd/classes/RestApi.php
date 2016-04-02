@@ -167,9 +167,9 @@ class RestAPI{
 		return $description;
 	}
 	
-	public function updateShowDetails($category, $id, $title, $tvdbId){
+	public function updateShowDetails($category, $id, $title, $tvdbId, $lang){
 		$url = "/shows/".$category."/edit/".$id;
-		$args = array("title" => $title, "tvdbId" => $tvdbId);
+		$args = array("title" => $title, "tvdbId" => $tvdbId, "lang" => $lang);
 		$result = $this->curlPost($url, $args);
 	
 		return $result;

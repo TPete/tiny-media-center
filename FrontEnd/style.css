@@ -276,6 +276,10 @@ label.config > input{
 	width: 400px;
 }
 
+#show-edit-box select {
+	width: 406px;	
+}
+
 #nm-movie-search-box select{
 	width: 406px;
 	padding: 2px;

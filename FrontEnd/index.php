@@ -256,7 +256,7 @@ $app->group('/shows', $checkAPI($api, $host), function() use ($app, $host, $api)
 				try{
 					$details = $api->getShowDetails($category, $id);
 					$app->render("showEdit.php", array("category" => $category, "id" => $id, 
-							"title" => $details["title"], "tvdbId" => $details["tvdbId"]));
+							"title" => $details["title"], "tvdbId" => $details["tvdbId"], "lang" => $details["lang"]));
 				}
 				catch(RemoteException $exp){
 					renderException($exp, $host, $app);
@@ -266,7 +266,7 @@ $app->group('/shows', $checkAPI($api, $host), function() use ($app, $host, $api)
 	$app->post('/:category/edit/:id',
 			function($category, $id) use ($app, $api, $host){
 				try{
-					$api->updateShowDetails($category, $id, $_POST["title"], $_POST["tvdbId"]);
+					$api->updateShowDetails($category, $id, $_POST["title"], $_POST["tvdbId"], $_POST["lang"]);
 					
 					$app->redirect("http://".$host.'/shows/'.$category.'/'.$id);
 				}
