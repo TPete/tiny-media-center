@@ -1,26 +1,12 @@
 <?php
-require "classes/Movie.php";
-
-require "classes/api/Util.php";
-require "classes/api/Store.php";
-require "classes/api/Controller.php";
-require "classes/api/DBAPIWrapper.php";
-require "classes/api/TTVDBWrapper.php";
-require "classes/api/ShowController.php";
-require "classes/api/ShowStoreDB.php";
-require "classes/api/TMDBWrapper.php";
-require "classes/api/MovieController.php";
-require "classes/api/MovieStoreDB.php";
-require "classes/api/ScrapeException.php";
-
-require "lib/getID3/getid3/getid3.php";
-require "lib/Slim/Slim.php";
 
 set_time_limit(900);
+require "vendor/autoload.php";
+require "vendor/james-heinrich/getid3/getid3/getid3.php";
 
-\Slim\Slim::registerAutoloader();
+use TinyMediaCenter\API;
 
-$app = new \Slim\Slim(array(
+$app = new Slim\Slim(array(
     'templates.path' => 'templates/'
 ));
 

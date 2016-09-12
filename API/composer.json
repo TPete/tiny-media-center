@@ -1,0 +1,9 @@
+{
+	"require": {
+        "slim/slim": "2.3.5",
+        "james-heinrich/getid3": "1.9.8" 
+    },
+    "autoload": {
+        "psr-4": {"TinyMediaCenter\\": "classes/"}
+    }
+}
